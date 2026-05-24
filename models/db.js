@@ -14,11 +14,16 @@ const pool = mysql.createPool({
   user: DB_USER,
   password: DB_PASSWORD,
   database: DB_NAME,
-  port: DB_PORT,
+  port: Number(DB_PORT),
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0
+  queueLimit: 0,
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
+
+
 
 async function query(sql, params = []) {
   const [rows] = await pool.execute(sql, params);
