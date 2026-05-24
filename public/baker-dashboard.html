@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Baker Dashboard - 3D Cake Customizer</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="dashboard-page">
+<div class="dashboard-profile-menu profile-menu">
+  <button id="profileMenuBtn" class="profile-menu-btn" aria-expanded="false" aria-controls="profileMenu">
+    <span id="profileInitial">C</span>
+  </button>
+  <div id="profileMenu" class="profile-menu-panel" hidden>
+    <a href="/?templateMode=1">Create Template</a>
+    <a href="/templates.html">Templates</a>
+    <a href="/">Editor</a>
+    <button id="logoutBtn">Logout</button>
+  </div>
+</div>
+<div class="dashboard-shell">
+  <div class="dashboard-header">
+    <div>
+      <p class="dashboard-kicker">Cake Studio</p>
+      <h1>Baker Dashboard</h1>
+      <p class="dashboard-subtitle">Manage orders, custom designs, and customer-ready templates.</p>
+    </div>
+  </div>
+
+  <div class="dashboard-stats">
+    <div class="stat-card">
+      <span>Orders</span>
+      <strong id="ordersCount">0</strong>
+    </div>
+    <div class="stat-card">
+      <span>Pre-made Templates</span>
+      <strong id="templateCount">0</strong>
+    </div>
+    <div class="stat-card">
+      <span>Custom Designs</span>
+      <strong id="customCount">0</strong>
+    </div>
+  </div>
+
+  <section class="dashboard-panel">
+    <div class="panel-heading">
+      <div>
+        <h2>Client Orders</h2>
+        <p>Switch tabs to load only the orders you need right now.</p>
+      </div>
+      <div class="filter-section">
+        <button class="order-tab active" data-order-tab="paid">Paid</button>
+        <button class="order-tab" data-order-tab="pending">Pending</button>
+        <button class="order-tab" data-order-tab="completed">Completed</button>
+      </div>
+    </div>
+    <div id="ordersContainer" class="dashboard-grid"></div>
+  </section>
+
+  <section class="dashboard-panel">
+    <div class="panel-heading">
+      <div>
+        <h2>Design Library</h2>
+        <p>Convert designs into templates or remove outdated work.</p>
+      </div>
+      <div class="filter-section">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="custom">Custom</button>
+        <button class="filter-btn" data-filter="premade">Templates</button>
+      </div>
+    </div>
+    <div id="designsContainer" class="dashboard-grid"></div>
+  </section>
+</div>
+
+<script src="/js/auth.js"></script>
+<script src="/js/three.min.js"></script>
+<script src="/js/cake-thumbnail.js"></script>
+<script src="/js/baker-dashboard.js"></script>
+</body>
+</html>

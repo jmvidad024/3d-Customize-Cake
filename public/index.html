@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Cake Customizer</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="top-bar">
+        <span id="welcomeText">Welcome to the Cake Studio</span>
+        <div class="profile-menu">
+            <button id="profileMenuBtn" class="profile-menu-btn" aria-expanded="false" aria-controls="profileMenu">
+                <span id="profileInitial">C</span>
+            </button>
+            <div id="profileMenu" class="profile-menu-panel" hidden>
+                <a id="userDashboardLink" href="/user-dashboard">My Orders</a>
+                <a href="/templates.html">Templates</a>
+                <a id="bakerDashboardLink" href="/baker-dashboard">Baker Dashboard</a>
+                <button id="logoutBtn">Logout</button>
+            </div>
+        </div>
+    </div>
+    <div id="container"></div>
+    <div id="controls">
+        <div class="layerControls">
+            <div id="layerMenu">
+                <h2>Layers</h2>
+                <button class="layerBtn active" data-layer="0">Layer 1</button>
+                <button class="layerBtn" data-layer="1" disabled>Layer 2</button>
+                <button class="layerBtn" data-layer="2" disabled>Layer 3</button>
+            </div>
+            <div class="layerActions">
+                <button id="addLayerBtn">Add Layer</button>
+                <button id="removeLayerBtn">Remove Layer</button>
+            </div>
+        </div>
+        <div id="flavorMenu">
+            <h2>Flavors</h2>
+            <button class="flavorBtn" data-flavor="Vanilla">Vanilla</button>
+            <button class="flavorBtn" data-flavor="Chocolate">Chocolate</button>
+            <button class="flavorBtn" data-flavor="Strawberry">Strawberry</button>
+            <button class="flavorBtn" data-flavor="Mocha">Mocha</button>
+            <button class="flavorBtn" data-flavor="Lemon">Lemon</button>
+        </div>
+        <div id="toppingMenu">
+            <h2>Toppings</h2>
+            <button class="toppingBtn" data-topping="sprinkles">Sprinkles</button>
+            <button class="toppingBtn" data-topping="whippedCream">Whipped Cream</button>
+            <button class="toppingBtn" data-topping="candles">Candles</button>
+            <button class="toppingBtn" data-topping="chocolateChips">Chocolate Chips</button>
+            <input id="customTextInput" type="text" placeholder="Custom cake text">
+            <button id="textToppingBtn" class="toppingBtn">Add Text</button>
+            <button id="clearToppingBtn" class="toppingBtn">Deselect</button>
+        </div>
+        <div class="toppingActions">
+            <button id="undoToppingBtn">Undo Last Topping</button>
+            <button id="clearToppingsBtn">Clear All Toppings</button>
+        </div>
+        <div class="designActions">
+            <button id="saveDesignBtn">Save & Pay</button>
+            <button id="backToTemplatesBtn">Back to Templates</button>
+        </div>
+        <div id="toppingStatus">Pick a topping, then click on the cake to place it.</div>
+        <div id="appointmentStatus"></div>
+    </div>
+
+    <!-- Save Design Modal -->
+    <div id="saveModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Save Design</h2>
+            <input type="text" id="designName" placeholder="Enter design name" />
+            <button id="confirmSaveBtn">Save & Proceed to Payment</button>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/three.min.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/save-load.js"></script>
+</body>
+</html>

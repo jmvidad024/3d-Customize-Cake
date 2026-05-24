@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>User Dashboard - 3D Cake Customizer</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="dashboard-page">
+<div class="dashboard-profile-menu profile-menu">
+  <button id="profileMenuBtn" class="profile-menu-btn" aria-expanded="false" aria-controls="profileMenu">
+    <span id="profileInitial">C</span>
+  </button>
+  <div id="profileMenu" class="profile-menu-panel" hidden>
+    <a href="/templates.html">Templates</a>
+    <a href="/">Editor</a>
+    <a id="bakerDashboardLink" href="/baker-dashboard" style="display:none;">Baker Dashboard</a>
+    <button id="logoutBtn">Logout</button>
+  </div>
+</div>
+<div class="dashboard-shell">
+  <div class="dashboard-header">
+    <div>
+      <p class="dashboard-kicker">Cake Studio</p>
+      <h1>Your Orders</h1>
+      <p class="dashboard-subtitle">Track your orders and saved cake designs.</p>
+    </div>
+  </div>
+
+  <div id="ordersContainer" class="designs-grid"></div>
+  <div id="designsContainer" class="designs-grid"></div>
+</div>
+
+<script src="/js/auth.js"></script>
+<script src="/js/three.min.js"></script>
+<script src="/js/cake-thumbnail.js"></script>
+<script src="/js/user-dashboard.js"></script>
+</body>
+</html>

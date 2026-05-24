@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browse Cake Templates - 3D Cake Customizer</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/templates.css">
+</head>
+<body>
+    <div class="top-bar">
+        <span id="welcomeText">Welcome to Cake Studio</span>
+        <div class="profile-menu">
+            <button id="profileMenuBtn" class="profile-menu-btn" aria-expanded="false" aria-controls="profileMenu">
+                <span id="profileInitial">C</span>
+            </button>
+            <div id="profileMenu" class="profile-menu-panel" hidden>
+                <a href="/user-dashboard">My Orders</a>
+                <a id="bakerDashboardLink" href="/baker-dashboard" style="display:none;">Baker Dashboard</a>
+                <button id="logoutBtn">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>Choose Your Perfect Cake</h1>
+            <p>Browse our delicious pre-made designs or create your custom masterpiece</p>
+        </div>
+
+        <div class="controls">
+            <button class="create-custom-btn" id="createCustomBtn">Create Custom Cake</button>
+        </div>
+
+        <div id="draftNotice" class="draft-notice"></div>
+
+        <div id="templatesContainer" class="templates-grid">
+            <div class="loading">Loading templates...</div>
+        </div>
+    </div>
+
+    <script src="/js/auth.js"></script>
+    <script src="/js/three.min.js"></script>
+    <script src="/js/cake-thumbnail.js"></script>
+    <script src="/js/templates.js"></script>
+</body>
+</html>
