@@ -43,11 +43,15 @@ async function ensureColumnExists(table, columnName, definition) {
 
 async function init() {
   const createDb = await mysql.createConnection({
-    host: DB_HOST,
-    user: DB_USER,
-    password: DB_PASSWORD,
-    port: DB_PORT
-  });
+  host: DB_HOST,
+  user: DB_USER,
+  password: DB_PASSWORD,
+  port: DB_PORT,
+
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
 
   await createDb.query(`CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\``);
   await createDb.end();
