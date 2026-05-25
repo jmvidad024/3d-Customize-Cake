@@ -46,6 +46,18 @@ async function ensureColumnExists(table, columnName, definition) {
   }
 }
 
+async function ensureIndexExists(table, indexName, columns) {
+  const rows = await query(`
+    SHOW INDEX FROM ${table} WHERE Key_name = ?
+  `, [indexName]);
+
+  if (!rows || rows.length === 0) {
+    await query(`
+      CREATE INDEX ${indexName} ON ${table}(${columns})
+    `);
+  }
+}
+
 async function init() {
   const createDb = await mysql.createConnection({
   host: DB_HOST,
@@ -88,6 +100,18 @@ async function init() {
   `);
 
   await query(`
+    CREATE TABLE IF NOT EXISTS chat_tickets (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      user_id VARCHAR(36) NOT NULL,
+      message TEXT NOT NULL,
+      image_url TEXT DEFAULT NULL,
+      status ENUM('open','resolved') DEFAULT 'open',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB;
+  `);
+
+  await query(`
     CREATE TABLE IF NOT EXISTS appointments (
       id INT AUTO_INCREMENT PRIMARY KEY,
       user_id VARCHAR(36) NOT NULL,
@@ -104,6 +128,8 @@ async function init() {
     ) ENGINE=InnoDB;
   `);
 
+  await ensureIndexExists('chat_tickets', 'idx_chat_user', 'user_id');
+  await ensureIndexExists('chat_tickets', 'idx_chat_status', 'status');
   await ensureColumnExists('appointments', 'paid', 'paid TINYINT(1) DEFAULT 0');
   await ensureColumnExists('appointments', 'paid_at', 'paid_at DATETIME DEFAULT NULL');
   await ensureColumnExists('appointments', 'completed_at', 'completed_at DATETIME DEFAULT NULL');

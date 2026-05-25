@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>User Dashboard - 3D Cake Customizer</title>
 <link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/dashboard.css">
+<link rel="stylesheet" href="/css/chatbot-widget.css">
 </head>
 <body class="dashboard-page">
 <div class="dashboard-profile-menu profile-menu">
@@ -12,6 +14,7 @@
     <span id="profileInitial">C</span>
   </button>
   <div id="profileMenu" class="profile-menu-panel" hidden>
+    <a id="chatbotDashboardLink" href="/chatbot-dashboard" style="display:none;">Report Tickets</a>
     <a href="/templates.html">Templates</a>
     <a href="/">Editor</a>
     <a id="bakerDashboardLink" href="/baker-dashboard" style="display:none;">Baker Dashboard</a>
@@ -31,9 +34,26 @@
   <div id="designsContainer" class="designs-grid"></div>
 </div>
 
+<div id="chatbot-widget">
+        <button id="chatbot-toggle">💬</button>
+
+        <div id="chatbot-box" class="hidden">
+            <div class="chat-header">Support</div>
+
+            <div id="chat-messages"></div>
+
+            <textarea id="chat-input" placeholder="Describe your issue..."></textarea>
+
+            <input type="file" id="chat-image" />
+
+            <button id="chat-send">Send</button>
+        </div>
+    </div>
+
 <script src="/js/auth.js"></script>
 <script src="/js/three.min.js"></script>
 <script src="/js/cake-thumbnail.js"></script>
 <script src="/js/user-dashboard.js"></script>
+<script src="/js/chatbot-widget.js"></script>
 </body>
 </html>

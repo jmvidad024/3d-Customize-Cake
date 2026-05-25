@@ -1,3 +1,5 @@
+let logoutBound = false;
+
 function getToken() {
   return localStorage.getItem('cake_token');
 }
@@ -84,6 +86,10 @@ function updateAuthUI(user) {
   if (bakerLink) {
     bakerLink.style.display = ['baker', 'admin'].includes(user.role) ? 'inline-flex' : 'none';
   }
+  const reportLink = document.getElementById('chatbotDashboardLink');
+  if (reportLink) {
+    reportLink.style.display = ['baker', 'admin'].includes(user.role) ? 'inline-flex' : 'none';
+  }
   const userLink = document.getElementById('userDashboardLink');
   if (userLink) {
     userLink.style.display = 'inline-flex';
@@ -100,27 +106,47 @@ function updateAuthUI(user) {
       window.location.href = '/login';
     });
   }
+  bindLogout();
   initProfileMenu();
 }
 
 function initProfileMenu() {
   const profileMenuBtn = document.getElementById('profileMenuBtn');
   const profileMenu = document.getElementById('profileMenu');
-  if (!profileMenuBtn || !profileMenu || profileMenuBtn.dataset.menuReady === 'true') {
-    return;
-  }
+  if (!profileMenuBtn || !profileMenu) return;
 
+  // prevent duplicate binding
+  if (profileMenuBtn.dataset.menuReady === 'true') return;
   profileMenuBtn.dataset.menuReady = 'true';
-  profileMenuBtn.addEventListener('click', () => {
+
+  profileMenuBtn.addEventListener('click', (e) => {
+    e.stopPropagation(); // IMPORTANT FIX
     const isOpen = !profileMenu.hidden;
     profileMenu.hidden = isOpen;
     profileMenuBtn.setAttribute('aria-expanded', String(!isOpen));
   });
 
   document.addEventListener('click', (event) => {
-    if (profileMenu.hidden) return;
-    if (event.target.closest('.profile-menu')) return;
-    profileMenu.hidden = true;
-    profileMenuBtn.setAttribute('aria-expanded', 'false');
+    if (!profileMenu.hidden && !event.target.closest('.profile-menu')) {
+      profileMenu.hidden = true;
+      profileMenuBtn.setAttribute('aria-expanded', 'false');
+    }
+  });
+}
+
+function bindLogout() {
+  if (logoutBound) return;
+  logoutBound = true;
+
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (!logoutBtn) return;
+
+  logoutBtn.addEventListener('click', async () => {
+    try {
+      await authFetch('/api/auth/logout', { method: 'POST' });
+    } catch (e) {}
+
+    clearSession();
+    window.location.href = '/login';
   });
 }

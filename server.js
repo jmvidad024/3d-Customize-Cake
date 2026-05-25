@@ -6,6 +6,7 @@ const { init } = require('./models/db');
 const authController = require('./controllers/authController');
 const designController = require('./controllers/designController');
 const appointmentController = require('./controllers/appointmentController');
+const chatbotController = require('./controllers/chatbotController');
 const { authenticateToken, requireAuth, requireRole } = require('./middleware/authMiddleware');
 
 const app = express();
@@ -75,6 +76,9 @@ app.get('/baker-dashboard', requireRole('baker', 'admin'), (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'baker-dashboard.html'));
 });
 
+app.get('/chatbot-dashboard', requireRole('baker', 'admin'), (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'chatbot-dashboard.html'));
+});
 /**
  * -----------------------------
  * AUTH API
@@ -102,7 +106,7 @@ app.delete('/api/designs/:id', requireAuth, designController.remove);
  * -----------------------------
  * APPOINTMENTS API
  * -----------------------------
- */
+*/
 
 app.get('/api/appointments/availability', appointmentController.availability);
 app.post('/api/appointments/book', requireAuth, appointmentController.book);
@@ -114,6 +118,20 @@ app.get('/api/appointments', requireRole('baker', 'admin'), appointmentControlle
 app.post('/api/appointments/:id/pay', requireAuth, appointmentController.pay);
 app.patch('/api/appointments/:id', requireAuth, appointmentController.update);
 app.delete('/api/appointments/:id', requireRole('baker', 'admin'), appointmentController.remove);
+
+/**
+ * -----------------------------
+ * CHATBOT API
+ * -----------------------------
+*/
+
+// CUSTOMER chat
+app.post('/api/chat', requireAuth, chatbotController.createTicket);
+app.get('/api/chat', requireAuth, chatbotController.getMyChats);
+
+// ADMIN chat logs
+app.get('/api/chat/admin', requireRole('baker', 'admin'), chatbotController.getAllChats);
+app.patch('/api/chat/:id', requireRole('baker', 'admin'), chatbotController.resolveChat);
 
 /**
  * -----------------------------
