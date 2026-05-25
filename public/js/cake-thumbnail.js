@@ -308,15 +308,7 @@ function addCakeThumbnailChocolateChips(scene, point, hitObject) {
   let chipColor = 0x4a2b1a;
   if (hitObject && hitObject.material && hitObject.material.color) {
     const cakeColor = new THREE.Color(hitObject.material.color);
-
-    // compute luminance manually
-    const r = cakeColor.r;
-    const g = cakeColor.g;
-    const b = cakeColor.b;
-
-    const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-
-    chipColor = luminance > 0.5 ? 0x3d1f0a : 0xc8a882;
+    chipColor = cakeColor.getLuminance() > 0.5 ? 0x3d1f0a : 0xc8a882;
   }
 
   for (let i = 0; i < 15; i++) {
