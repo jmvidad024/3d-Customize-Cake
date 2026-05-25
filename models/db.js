@@ -6,8 +6,11 @@ const {
   DB_USER,
   DB_PASSWORD,
   DB_NAME,
-  DB_PORT
+  DB_PORT,
+  NODE_ENV
 } = process.env;
+
+const isProduction = NODE_ENV === 'production';
 
 const pool = mysql.createPool({
   host: DB_HOST,
@@ -18,9 +21,11 @@ const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-  ssl: {
-    rejectUnauthorized: false
-  }
+  ssl: isProduction
+    ? {
+        rejectUnauthorized: false
+      }
+    : false
 });
 
 
@@ -48,9 +53,11 @@ async function init() {
   password: DB_PASSWORD,
   port: DB_PORT,
 
-  ssl: {
-    rejectUnauthorized: false
-  }
+  ssl: isProduction
+    ? {
+        rejectUnauthorized: false
+      }
+    : false
 });
 
   await createDb.query(`CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\``);
