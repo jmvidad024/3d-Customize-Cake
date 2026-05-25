@@ -9,6 +9,9 @@ const {
 
 const { JWT_SECRET = 'change-this-secret' } = process.env;
 
+/**
+ * Generate JWT
+ */
 function getToken(user) {
   return jwt.sign(
     { sub: user.id },
@@ -22,55 +25,43 @@ function getToken(user) {
  */
 async function login(req, res) {
   try {
-    console.log('=== LOGIN REQUEST ===');
-    console.log('BODY:', req.body);
-
     const { email, password } = req.body;
 
-    if (!email || !password) {
-      console.log('Missing email or password');
+    // SAFE LOGGING
+    console.log(`[AUTH] Login attempt: ${email}`);
 
+    if (!email || !password) {
       return res.status(400).json({
         error: 'Email and password are required'
       });
     }
 
-    console.log('Finding user:', email);
-
     const user = await findUserByEmail(email);
 
-    console.log('USER FOUND:', !!user);
-
     if (!user) {
-      console.log('User does not exist');
+      console.warn(`[AUTH] Login failed - user not found: ${email}`);
 
       return res.status(401).json({
         error: 'Invalid credentials'
       });
     }
-
-    console.log('Comparing passwords');
 
     const passwordMatches = await comparePassword(
       password,
       user.password
     );
 
-    console.log('PASSWORD MATCH:', passwordMatches);
-
     if (!passwordMatches) {
-      console.log('Wrong password');
+      console.warn(`[AUTH] Login failed - wrong password: ${email}`);
 
       return res.status(401).json({
         error: 'Invalid credentials'
       });
     }
 
-    console.log('Generating token');
-
     const token = getToken(user);
 
-    console.log('LOGIN SUCCESS');
+    console.log(`[AUTH] Login successful: ${email}`);
 
     return res.json({
       user: sanitizeUser(user),
@@ -78,11 +69,10 @@ async function login(req, res) {
     });
 
   } catch (err) {
-    console.error('LOGIN ERROR:', err);
+    console.error('[AUTH] Login error:', err.message);
 
     return res.status(500).json({
-      error: 'Internal server error',
-      details: err.message
+      error: 'Internal server error'
     });
   }
 }
@@ -92,34 +82,26 @@ async function login(req, res) {
  */
 async function register(req, res) {
   try {
-    console.log('=== REGISTER REQUEST ===');
-    console.log('BODY:', req.body);
-
     const { name, email, password } = req.body;
 
-    if (!name || !email || !password) {
-      console.log('Missing fields');
+    // SAFE LOGGING
+    console.log(`[AUTH] Register attempt: ${email}`);
 
+    if (!name || !email || !password) {
       return res.status(400).json({
         error: 'Name, email, and password are required'
       });
     }
 
-    console.log('Checking existing user');
-
     const existing = await findUserByEmail(email);
 
-    console.log('EXISTING USER:', !!existing);
-
     if (existing) {
-      console.log('User already exists');
+      console.warn(`[AUTH] Register failed - existing email: ${email}`);
 
       return res.status(409).json({
         error: 'A user with this email already exists'
       });
     }
-
-    console.log('Creating user');
 
     const user = await createUser({
       name,
@@ -128,25 +110,20 @@ async function register(req, res) {
       role: 'customer'
     });
 
-    console.log('USER CREATED:', user);
-
-    console.log('Generating token');
-
     const token = getToken(user);
 
-    console.log('REGISTER SUCCESS');
+    console.log(`[AUTH] Register successful: ${email}`);
 
-    return res.json({
+    return res.status(201).json({
       user: sanitizeUser(user),
       token
     });
 
   } catch (err) {
-    console.error('REGISTER ERROR:', err);
+    console.error('[AUTH] Register error:', err.message);
 
     return res.status(500).json({
-      error: 'Internal server error',
-      details: err.message
+      error: 'Internal server error'
     });
   }
 }
@@ -156,16 +133,23 @@ async function register(req, res) {
  */
 function me(req, res) {
   try {
-    console.log('ME REQUEST');
-    console.log('REQ.USER:', req.user);
+    if (!req.user) {
+      return res.status(401).json({
+        error: 'Unauthorized'
+      });
+    }
 
-    return res.json(sanitizeUser(req.user));
+    console.log(`[AUTH] Current user request: ${req.user.email}`);
+
+    return res.json(
+      sanitizeUser(req.user)
+    );
 
   } catch (err) {
-    console.error('ME ERROR:', err);
+    console.error('[AUTH] Me error:', err.message);
 
     return res.status(500).json({
-      error: err.message
+      error: 'Internal server error'
     });
   }
 }
@@ -174,12 +158,21 @@ function me(req, res) {
  * LOGOUT
  */
 async function logout(req, res) {
-  console.log('LOGOUT REQUEST');
+  try {
+    console.log('[AUTH] Logout request');
 
-  return res.json({
-    success: true,
-    message: 'Logged out'
-  });
+    return res.json({
+      success: true,
+      message: 'Logged out successfully'
+    });
+
+  } catch (err) {
+    console.error('[AUTH] Logout error:', err.message);
+
+    return res.status(500).json({
+      error: 'Internal server error'
+    });
+  }
 }
 
 module.exports = {

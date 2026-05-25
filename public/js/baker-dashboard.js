@@ -199,7 +199,15 @@ async function deletePendingOrder(order) {
   if (!confirm(`Delete ${name} for ${customer}?`)) return;
 
   try {
-    const res = await authFetch(`/api/appointments/${order.id}`, { method: 'DELETE' });
+    const res = await authFetch(`/api/appointments/${order.id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        confirm: true
+      })
+    });
     if (!res.ok) {
       const error = await res.json().catch(() => ({}));
       alert(error.error || 'Unable to delete pending order');
@@ -211,6 +219,34 @@ async function deletePendingOrder(order) {
     console.error(error);
     alert('Unable to delete pending order');
   }
+}
+
+async function deleteDesign(id) {
+  const confirmDelete = confirm(
+    "Are you sure you want to delete this design? This cannot be undone."
+  );
+
+  if (!confirmDelete) return;
+
+  const res = await authFetch(`/api/designs/${id}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      confirm: true
+    })
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    alert(data.error || 'Delete failed');
+    return;
+  }
+
+  alert('Deleted successfully');
+  loadDesigns();
 }
 
 function renderDesigns(designs) {
@@ -269,13 +305,7 @@ function renderDesigns(designs) {
     del.className = 'delete-btn';
     del.textContent = 'Delete';
     del.onclick = async () => {
-      if (!confirm('Delete?')) return;
-      const res = await authFetch(`/api/designs/${design.id}`, { method: 'DELETE' });
-      if (res.ok) {
-        loadDesigns();
-      } else {
-        alert('Delete failed');
-      }
+      deleteDesign(design.id);
     };
     actions.appendChild(del);
 

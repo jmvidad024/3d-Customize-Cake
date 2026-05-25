@@ -90,15 +90,22 @@ async function updateDesign(id, changes, user) {
   return getDesignById(id);
 }
 
-async function deleteDesign(id, user) {
+async function deleteDesign(id, user, { confirm = false } = {}) {
   const design = await getDesignById(id);
   if (!design) return false;
 
+  // must explicitly confirm deletion
+  if (!confirm) {
+    throw new Error('ConfirmRequired');
+  }
+
+  // permission check
   if (!['admin', 'baker'].includes(user.role) && design.owner !== user.id) {
     throw new Error('Forbidden');
   }
 
   const result = await query('DELETE FROM designs WHERE id = ?', [id]);
+
   return result.affectedRows > 0;
 }
 

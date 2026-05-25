@@ -83,16 +83,32 @@ async function update(req, res) {
 
 async function remove(req, res) {
   try {
-    const deleted = await deleteDesign(req.params.id, req.user);
-    if (!deleted) {
-      return res.status(404).json({ error: 'Design not found or forbidden' });
+    const { confirm } = req.body;
+    console.log(confirm);
+    if (!confirm) {
+      return res.status(400).json({
+        error: 'Please confirm deletion'
+      });
     }
-    res.json({ success: true });
+
+    const deleted = await deleteDesign(req.params.id, req.user, { confirm });
+
+    if (!deleted) {
+      return res.status(404).json({
+        error: 'Design not found or forbidden'
+      });
+    }
+
+    return res.json({ success: true });
+
   } catch (error) {
     if (error.message === 'Forbidden') {
       return res.status(403).json({ error: 'Forbidden' });
     }
-    res.status(500).json({ error: 'Unable to delete design' });
+
+    return res.status(500).json({
+      error: 'Unable to delete design'
+    });
   }
 }
 
