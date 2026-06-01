@@ -173,6 +173,7 @@ app.delete('/api/appointments/:id', requireRole('baker', 'admin'), appointmentCo
 app.post('/api/custom-request', requireAuth, upload.single('image'), customRequestController.submitCustomRequest);
 app.get('/api/custom-request', requireAuth, customRequestController.getCustomRequests);
 app.get('/api/custom-request/admin/all', requireRole('baker', 'admin'), customRequestController.getAllCustomRequests);
+app.get('/api/custom-request/image/:filename', requireAuth, customRequestController.getCustomRequestImage);
 app.get('/api/custom-request/:id', requireAuth, customRequestController.getCustomRequestById);
 app.patch('/api/custom-request/:id', requireRole('baker', 'admin'), customRequestController.updateCustomRequestStatus);
 

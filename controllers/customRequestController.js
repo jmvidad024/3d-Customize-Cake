@@ -11,10 +11,18 @@ const SIZE_PRICES_PHP = {
   30: 1800
 };
 
-// Ensure uploads directory exists
-const uploadsDir = path.join(__dirname, '..', 'public', 'uploads', 'custom-requests');
-if (!fs.existsSync(uploadsDir)) {
+const isVercel = Boolean(process.env.VERCEL);
+const uploadsDir = isVercel
+  ? path.join('/tmp', 'custom-requests')
+  : path.join(__dirname, '..', 'public', 'uploads', 'custom-requests');
+
+function ensureUploadsDir() {
   fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+function getSafeUploadFilename(originalName) {
+  const cleanName = path.basename(originalName || 'cake-reference').replace(/[^\w.-]/g, '-');
+  return `${Date.now()}-${Math.random().toString(36).substring(7)}-${cleanName}`;
 }
 
 async function submitCustomRequest(req, res) {
@@ -45,14 +53,13 @@ async function submitCustomRequest(req, res) {
     // Handle file upload
     let imagePath = null;
     if (req.file) {
-      // Generate unique filename
-      const originalName = path.basename(req.file.originalname).replace(/[^\w.-]/g, '-');
-      const filename = `${Date.now()}-${Math.random().toString(36).substring(7)}-${originalName}`;
+      ensureUploadsDir();
+      const filename = getSafeUploadFilename(req.file.originalname);
       const filepath = path.join(uploadsDir, filename);
 
       // Save file
       fs.writeFileSync(filepath, req.file.buffer);
-      imagePath = `/uploads/custom-requests/${filename}`;
+      imagePath = `/api/custom-request/image/${filename}`;
     }
 
     // Calculate price
@@ -182,10 +189,29 @@ async function getAllCustomRequests(req, res) {
   }
 }
 
+async function getCustomRequestImage(req, res) {
+  const filename = path.basename(req.params.filename || '');
+  if (!filename) {
+    return res.status(404).end();
+  }
+
+  const filepath = path.join(uploadsDir, filename);
+  if (!filepath.startsWith(uploadsDir)) {
+    return res.status(400).end();
+  }
+
+  res.sendFile(filepath, (error) => {
+    if (error && !res.headersSent) {
+      res.status(error.statusCode || 404).end();
+    }
+  });
+}
+
 module.exports = {
   submitCustomRequest,
   getCustomRequests,
   getCustomRequestById,
+  getCustomRequestImage,
   updateCustomRequestStatus,
   getAllCustomRequests
 };
