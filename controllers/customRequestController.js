@@ -25,6 +25,14 @@ function getSafeUploadFilename(originalName) {
   return `${Date.now()}-${Math.random().toString(36).substring(7)}-${cleanName}`;
 }
 
+function normalizeCustomRequest(row) {
+  if (!row) return null;
+  return {
+    ...row,
+    image_path: row.image_data || row.image_path
+  };
+}
+
 async function submitCustomRequest(req, res) {
   try {
     const userId = req.user.id;
@@ -52,14 +60,21 @@ async function submitCustomRequest(req, res) {
 
     // Handle file upload
     let imagePath = null;
+    let imageData = null;
+    let imageMime = null;
     if (req.file) {
-      ensureUploadsDir();
-      const filename = getSafeUploadFilename(req.file.originalname);
-      const filepath = path.join(uploadsDir, filename);
+      imageMime = req.file.mimetype;
+      if (isVercel) {
+        imageData = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+      } else {
+        ensureUploadsDir();
+        const filename = getSafeUploadFilename(req.file.originalname);
+        const filepath = path.join(uploadsDir, filename);
 
-      // Save file
-      fs.writeFileSync(filepath, req.file.buffer);
-      imagePath = `/api/custom-request/image/${filename}`;
+        // Save file
+        fs.writeFileSync(filepath, req.file.buffer);
+        imagePath = `/api/custom-request/image/${filename}`;
+      }
     }
 
     // Calculate price
@@ -73,8 +88,8 @@ async function submitCustomRequest(req, res) {
     await query(
       `INSERT INTO custom_requests 
        (user_id, name, occasion, serving_size, flavor, dietary_needs, description, special_requests, 
-        image_path, pickup_date, delivery_type, delivery_address, estimated_price, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
+        image_path, image_data, image_mime, pickup_date, delivery_type, delivery_address, estimated_price, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
       [
         userId,
         name,
@@ -85,6 +100,8 @@ async function submitCustomRequest(req, res) {
         description,
         specialRequests,
         imagePath,
+        imageData,
+        imageMime,
         pickupDate,
         deliveryType,
         deliveryAddress,
@@ -115,7 +132,7 @@ async function getCustomRequests(req, res) {
       [userId]
     );
 
-    res.json(requests);
+    res.json(requests.map(normalizeCustomRequest));
 
   } catch (error) {
     console.error('Error fetching custom requests:', error);
@@ -138,7 +155,7 @@ async function getCustomRequestById(req, res) {
       return res.status(404).json({ error: 'Request not found' });
     }
 
-    res.json(request);
+    res.json(normalizeCustomRequest(request));
 
   } catch (error) {
     console.error('Error fetching custom request:', error);
@@ -185,7 +202,7 @@ async function getAllCustomRequests(req, res) {
        ORDER BY cr.created_at DESC`
     );
 
-    res.json(requests);
+    res.json(requests.map(normalizeCustomRequest));
 
   } catch (error) {
     console.error('Error fetching custom requests:', error);

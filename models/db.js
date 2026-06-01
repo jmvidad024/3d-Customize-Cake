@@ -138,6 +138,8 @@ async function init() {
       description TEXT NOT NULL,
       special_requests TEXT DEFAULT NULL,
       image_path TEXT DEFAULT NULL,
+      image_data LONGTEXT DEFAULT NULL,
+      image_mime VARCHAR(100) DEFAULT NULL,
       pickup_date DATE NOT NULL,
       delivery_type VARCHAR(50) NOT NULL,
       delivery_address TEXT DEFAULT NULL,
@@ -171,6 +173,8 @@ async function init() {
   await ensureColumnExists('custom_requests', 'description', 'description TEXT DEFAULT NULL');
   await ensureColumnExists('custom_requests', 'special_requests', 'special_requests TEXT DEFAULT NULL');
   await ensureColumnExists('custom_requests', 'image_path', 'image_path TEXT DEFAULT NULL');
+  await ensureColumnExists('custom_requests', 'image_data', 'image_data LONGTEXT DEFAULT NULL');
+  await ensureColumnExists('custom_requests', 'image_mime', 'image_mime VARCHAR(100) DEFAULT NULL');
   await ensureColumnExists('custom_requests', 'pickup_date', 'pickup_date DATE DEFAULT NULL');
   await ensureColumnExists('custom_requests', 'delivery_type', "delivery_type VARCHAR(50) NOT NULL DEFAULT 'pickup'");
   await ensureColumnExists('custom_requests', 'delivery_address', 'delivery_address TEXT DEFAULT NULL');
