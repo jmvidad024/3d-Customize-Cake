@@ -3,7 +3,7 @@ const DAILY_CAPACITY = 3;
 const PENDING_APPOINTMENT_LIMIT = 3;
 
 function appointmentSelectSql(whereClause = '') {
-  return `SELECT a.*, u.name AS customer_name, u.email AS customer_email, d.name AS design_name, d.thumbnail AS design_thumbnail, d.price AS design_price, d.design AS design_data, d.type AS design_type, d.owner_id AS design_owner FROM appointments a LEFT JOIN users u ON a.user_id = u.id LEFT JOIN designs d ON a.design_id = d.id${whereClause} ORDER BY a.date ASC, a.created_at DESC`;
+  return `SELECT a.*, u.name AS customer_name, u.email AS customer_email, d.name AS design_name, d.thumbnail AS design_thumbnail, d.price AS design_price, d.design AS design_data, d.type AS design_type, d.owner_id AS design_owner FROM appointments a LEFT JOIN users u ON a.user_id COLLATE utf8mb4_general_ci = u.id COLLATE utf8mb4_general_ci LEFT JOIN designs d ON a.design_id = d.id${whereClause} ORDER BY a.date ASC, a.created_at DESC`;
 }
 
 function parseDesignData(designData) {

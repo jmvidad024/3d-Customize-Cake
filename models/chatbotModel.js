@@ -21,7 +21,7 @@ async function getAllTickets() {
   return query(
     `SELECT ct.*, u.name AS customer_name, d.name AS design_name
      FROM chat_tickets ct
-     LEFT JOIN users u ON u.id = ct.user_id
+     LEFT JOIN users u ON u.id COLLATE utf8mb4_general_ci = ct.user_id COLLATE utf8mb4_general_ci
      LEFT JOIN designs d ON d.id = ct.design_id
      ORDER BY ct.created_at DESC`
   );

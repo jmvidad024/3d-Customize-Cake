@@ -198,7 +198,8 @@ async function getAllCustomRequests(req, res) {
     const requests = await query(
       `SELECT cr.*, u.name AS customer_name, u.email AS customer_email
        FROM custom_requests cr
-       LEFT JOIN users u ON u.id = cr.user_id
+       LEFT JOIN users u
+         ON u.id COLLATE utf8mb4_general_ci = cr.user_id COLLATE utf8mb4_general_ci
        ORDER BY cr.created_at DESC`
     );
 
