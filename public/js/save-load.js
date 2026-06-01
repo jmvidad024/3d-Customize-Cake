@@ -159,6 +159,7 @@ const saveModal = document.getElementById('saveModal');
 const saveBtn = document.getElementById('saveDesignBtn');
 const confirmSaveBtn = document.getElementById('confirmSaveBtn');
 const designNameInput = document.getElementById('designName');
+const designPriceInput = document.getElementById('designPrice');
 const backToTemplatesBtn = document.getElementById('backToTemplatesBtn');
 const appointmentStatus = document.getElementById('appointmentStatus');
 
@@ -167,6 +168,16 @@ const editorParams = new URLSearchParams(window.location.search);
 const viewDesignId = editorParams.get('viewDesign');
 let currentUser = null;
 let templateMode = editorParams.get('templateMode') === '1';
+
+function formatPeso(amount) {
+    return `PHP ${Number(amount || 0).toLocaleString('en-PH')}`;
+}
+
+function calculateEditorPrice(designData) {
+    const layerCount = Math.max(1, (designData.layers || []).length);
+    const toppingCount = (designData.toppings || []).length;
+    return 1200 + ((layerCount - 1) * 500) + (toppingCount * 75);
+}
 
 function isViewOnlyMode() {
     return Boolean(viewDesignId);
@@ -210,6 +221,8 @@ saveBtn.addEventListener('click', function() {
     }
     if (isTemplateMode()) {
         designNameInput.value = '';
+        designPriceInput.value = '';
+        designPriceInput.style.display = 'block';
         saveModal.querySelector('h2').textContent = 'Save Pre-made Template';
         confirmSaveBtn.textContent = 'Save Template';
         designNameInput.focus();
@@ -218,10 +231,11 @@ saveBtn.addEventListener('click', function() {
     }
     if (!draftAppointment) {
         alert('⚠️ You need to book a custom cake appointment first. Redirecting to Templates.');
-        window.location.href = '/templates.html';
+        window.location.href = '/templates';
         return;
     }
     designNameInput.value = '';
+    designPriceInput.style.display = 'none';
     designNameInput.focus();
     saveModal.style.display = 'block';
 });
@@ -236,19 +250,20 @@ confirmSaveBtn.addEventListener('click', async function() {
     }
     if (!draftAppointment) {
         alert('Appointment not found. Please book first.');
-        window.location.href = '/templates.html';
+        window.location.href = '/templates';
         return;
     }
 
     const designData = exportCakeDesign();
     designData.name = designName;
+    const price = calculateEditorPrice(designData);
     const thumbnail = generateThumbnail({ name: designName, layers: designData.layers, toppings: designData.toppings });
 
     try {
         const response = await authFetch('/api/designs', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: designName, type: 'custom', design: designData, thumbnail })
+            body: JSON.stringify({ name: designName, type: 'custom', design: designData, thumbnail, price })
         });
         if (!response.ok) {
             const error = await response.json();
@@ -260,7 +275,7 @@ confirmSaveBtn.addEventListener('click', async function() {
         const attachRes = await authFetch(`/api/appointments/${draftAppointment.id}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ designId: result.id, status: 'confirmed' })
+            body: JSON.stringify({ designId: result.id, status: 'confirmed', amount: price })
         });
         if (!attachRes.ok) {
             const attachError = await attachRes.json().catch(() => ({}));
@@ -269,7 +284,7 @@ confirmSaveBtn.addEventListener('click', async function() {
         }
 
         saveModal.style.display = 'none';
-        showPaymentFlow(draftAppointment.id);
+        showPaymentFlow(draftAppointment.id, price);
     } catch (error) {
         console.error('Error:', error);
         alert('Error saving design');
@@ -279,13 +294,18 @@ confirmSaveBtn.addEventListener('click', async function() {
 async function savePremadeTemplate(designName) {
     const designData = exportCakeDesign();
     designData.name = designName;
+    const price = Number(designPriceInput.value);
+    if (!Number.isFinite(price) || price <= 0) {
+        alert('Please enter a valid template price in PHP');
+        return;
+    }
     const thumbnail = generateThumbnail({ name: designName, layers: designData.layers, toppings: designData.toppings });
 
     try {
         const response = await authFetch('/api/designs', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: designName, type: 'premade', design: designData, thumbnail })
+            body: JSON.stringify({ name: designName, type: 'premade', design: designData, thumbnail, price })
         });
         const result = await response.json().catch(() => ({}));
         if (!response.ok) {
@@ -304,9 +324,10 @@ async function savePremadeTemplate(designName) {
     }
 }
 
-function showPaymentFlow(apptId) {
+function showPaymentFlow(apptId, amount) {
     appointmentStatus.innerHTML = `
         ✅ Design saved and attached to your appointment.
+        Amount due: ${formatPeso(amount)}.
         <button id="payNowBtn" class="pay-now-btn">
             Pay Now
         </button>
@@ -319,7 +340,7 @@ function showPaymentFlow(apptId) {
                 const payJson = await payRes.json();
                 if (payRes.ok) {
                     alert('✅ Payment successful! Your order is now placed.');
-                    window.location.href = '/templates.html';
+                    window.location.href = '/templates';
                 } else {
                     alert(payJson.error || 'Payment failed');
                 }
@@ -337,7 +358,7 @@ backToTemplatesBtn.addEventListener('click', () => {
         return;
     }
     if (isViewOnlyMode() || confirm('Leave the editor and return to templates?')) {
-        window.location.href = '/templates.html';
+        window.location.href = '/templates';
     }
 });
 
@@ -350,7 +371,7 @@ backToTemplatesBtn.addEventListener('click', () => {
 
     if (templateMode && !isTemplateMode()) {
         alert('Only bakers and admins can create pre-made templates.');
-        window.location.href = '/templates.html';
+        window.location.href = '/templates';
         return;
     }
 
@@ -359,7 +380,7 @@ backToTemplatesBtn.addEventListener('click', () => {
             const res = await authFetch(`/api/designs/${viewDesignId}`);
             if (!res.ok) {
                 alert('Unable to load template preview.');
-                window.location.href = '/templates.html';
+                window.location.href = '/templates';
                 return;
             }
             const design = await res.json();
@@ -369,7 +390,7 @@ backToTemplatesBtn.addEventListener('click', () => {
         } catch (error) {
             console.error(error);
             alert('Unable to load template preview.');
-            window.location.href = '/templates.html';
+            window.location.href = '/templates';
         }
         return;
     }
@@ -384,9 +405,10 @@ backToTemplatesBtn.addEventListener('click', () => {
     const draft = await loadDraftAppointment();
     if (!draft) {
         alert('⚠️ You must book a custom cake appointment before designing. Redirecting to Templates.');
-        window.location.href = '/templates.html';
+        window.location.href = '/templates';
         return;
     }
     appointmentStatus.textContent = `📅 Draft appointment for ${draft.date}. Design your cake, then save and pay.`;
 })();
+
 

@@ -1,13 +1,29 @@
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
+const multer = require('multer');
 
 const { init } = require('./models/db');
 const authController = require('./controllers/authController');
 const designController = require('./controllers/designController');
 const appointmentController = require('./controllers/appointmentController');
 const chatbotController = require('./controllers/chatbotController');
+const customRequestController = require('./controllers/customRequestController');
 const { authenticateToken, requireAuth, requireRole } = require('./middleware/authMiddleware');
+
+// Configure multer for file uploads
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  fileFilter: (req, file, cb) => {
+    const allowedMimes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only JPG, PNG, and WebP images are allowed'));
+    }
+  }
+});
 
 const app = express();
 
@@ -55,12 +71,30 @@ app.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
+const pageRedirects = {
+  '/index.html': '/',
+  '/templates.html': '/templates',
+  '/user-dashboard.html': '/user-dashboard',
+  '/help-report.html': '/help-report',
+  '/custom-request.html': '/custom-request',
+  '/baker-dashboard.html': '/baker-dashboard',
+  '/report-dashboard.html': '/report-dashboard',
+  '/login.html': '/login'
+};
+
+Object.entries(pageRedirects).forEach(([from, to]) => {
+  app.get(from, (req, res) => {
+    const query = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+    res.redirect(301, `${to}${query}`);
+  });
+});
+
 app.get('/', (req, res) => {
   if (!req.user) return res.redirect('/login');
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.get('/templates.html', requireAuth, (req, res) => {
+app.get('/templates', requireAuth, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'templates.html'));
 });
 
@@ -68,16 +102,28 @@ app.get('/dashboard', (req, res) => {
   return res.redirect('/baker-dashboard');
 });
 
+app.get('/chatbot-dashboard', (req, res) => {
+  return res.redirect('/report-dashboard');
+});
+
 app.get('/user-dashboard', requireAuth, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'user-dashboard.html'));
+});
+
+app.get('/help-report', requireAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'help-report.html'));
+});
+
+app.get('/custom-request', requireAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'custom-request.html'));
 });
 
 app.get('/baker-dashboard', requireRole('baker', 'admin'), (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'baker-dashboard.html'));
 });
 
-app.get('/chatbot-dashboard', requireRole('baker', 'admin'), (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'chatbot-dashboard.html'));
+app.get('/report-dashboard', requireRole('baker', 'admin'), (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'report-dashboard.html'));
 });
 /**
  * -----------------------------
@@ -111,6 +157,7 @@ app.delete('/api/designs/:id', requireAuth, designController.remove);
 app.get('/api/appointments/availability', appointmentController.availability);
 app.post('/api/appointments/book', requireAuth, appointmentController.book);
 app.get('/api/appointments/draft', requireAuth, appointmentController.draft);
+app.delete('/api/appointments/draft', requireAuth, appointmentController.cancelDraft);
 app.get('/api/appointments/user', requireAuth, appointmentController.userAppointments);
 
 app.get('/api/appointments', requireRole('baker', 'admin'), appointmentController.all);
@@ -118,6 +165,16 @@ app.get('/api/appointments', requireRole('baker', 'admin'), appointmentControlle
 app.post('/api/appointments/:id/pay', requireAuth, appointmentController.pay);
 app.patch('/api/appointments/:id', requireAuth, appointmentController.update);
 app.delete('/api/appointments/:id', requireRole('baker', 'admin'), appointmentController.remove);
+
+/**
+ * CUSTOM REQUEST API
+ */
+
+app.post('/api/custom-request', requireAuth, upload.single('image'), customRequestController.submitCustomRequest);
+app.get('/api/custom-request', requireAuth, customRequestController.getCustomRequests);
+app.get('/api/custom-request/admin/all', requireRole('baker', 'admin'), customRequestController.getAllCustomRequests);
+app.get('/api/custom-request/:id', requireAuth, customRequestController.getCustomRequestById);
+app.patch('/api/custom-request/:id', requireRole('baker', 'admin'), customRequestController.updateCustomRequestStatus);
 
 /**
  * -----------------------------
@@ -142,6 +199,7 @@ app.patch('/api/chat/:id', requireRole('baker', 'admin'), chatbotController.reso
 app.use('/js', express.static(path.join(__dirname, 'public', 'js')));
 app.use('/css', express.static(path.join(__dirname, 'public', 'css')));
 app.use('/images', express.static(path.join(__dirname, 'public', 'images')));
+app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 
 /**
  * -----------------------------

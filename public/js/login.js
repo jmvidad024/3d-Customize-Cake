@@ -57,7 +57,7 @@ loginForm.addEventListener('submit', async (event) => {
     if (['admin', 'baker'].includes(data.user.role)) {
       window.location.href = '/baker-dashboard';
     } else {
-      window.location.href = '/templates.html';
+      window.location.href = '/templates';
     }
 
   } catch (err) {
@@ -109,7 +109,7 @@ registerForm.addEventListener('submit', async (event) => {
 
     setSession(data.user, data.token);
 
-    window.location.href = '/templates.html';
+    window.location.href = '/templates';
 
   } catch (err) {
     console.error('Register error:', err);

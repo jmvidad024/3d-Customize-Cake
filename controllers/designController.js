@@ -44,7 +44,7 @@ async function getOne(req, res) {
 }
 
 async function create(req, res) {
-  const { name, type, design, thumbnail } = req.body;
+  const { name, type, design, thumbnail, price } = req.body;
   if (!name || !design) {
     return res.status(400).json({ error: 'Name and design are required' });
   }
@@ -59,6 +59,7 @@ async function create(req, res) {
     type: designType,
     ownerId: req.user.id,
     thumbnail: thumbnail || null,
+    price: price || 0,
     design
   });
 

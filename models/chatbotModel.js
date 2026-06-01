@@ -1,9 +1,9 @@
 const { query } = require('./db');
 
-async function createTicket(userId, message) {
+async function createTicket(userId, message, designId) {
   return query(
-    'INSERT INTO chat_tickets (user_id, message) VALUES (?, ?)',
-    [userId, message]
+    'INSERT INTO chat_tickets (user_id, message, design_id) VALUES (?, ?, ?)',
+    [userId, message, designId || null]
   );
 }
 
@@ -19,9 +19,10 @@ async function getUserTickets(userId) {
 async function getAllTickets() {
 
   return query(
-    `SELECT ct.*, u.name AS customer_name
+    `SELECT ct.*, u.name AS customer_name, d.name AS design_name
      FROM chat_tickets ct
-     JOIN users u ON u.id = ct.user_id
+     LEFT JOIN users u ON u.id = ct.user_id
+     LEFT JOIN designs d ON d.id = ct.design_id
      ORDER BY ct.created_at DESC`
   );
 

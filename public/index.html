@@ -7,22 +7,29 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/chatbot-widget.css">
 </head>
-<body>
-    <div class="top-bar">
-        <span id="welcomeText">Welcome to the Cake Studio</span>
+<body class="editor-page">
+    <nav class="app-navbar">
+        <div class="app-navbar-brand">
+            <strong>Cake Studio</strong>
+            <span id="welcomeText">Cake editor</span>
+        </div>
         <div class="profile-menu">
             <button id="profileMenuBtn" class="profile-menu-btn" aria-expanded="false" aria-controls="profileMenu">
                 <span id="profileInitial">C</span>
             </button>
             <div id="profileMenu" class="profile-menu-panel" hidden>
-                <a id="chatbotDashboardLink" href="/chatbot-dashboard" style="display:none;">Report Tickets</a>
-                <a id="userDashboardLink" href="/user-dashboard">My Orders</a>
-                <a href="/templates.html">Templates</a>
-                <a id="bakerDashboardLink" href="/baker-dashboard">Baker Dashboard</a>
+                <a class="customer-only" id="userDashboardLink" href="/user-dashboard">My Orders</a>
+                <a class="customer-only" href="/help-report">Help & Report</a>
+                <a class="customer-only" href="/custom-request">Request Custom Design</a>
+                <a class="admin-only" id="bakerDashboardLink" href="/baker-dashboard" style="display:none;">Baker Dashboard</a>
+                <a class="admin-only" id="chatbotDashboardLink" href="/report-dashboard" style="display:none;">Report Tickets</a>
+                <a class="admin-only" href="/?templateMode=1" style="display:none;">Create Template</a>
+                <a href="/templates">Templates</a>
+                <a href="/">Editor</a>
                 <button id="logoutBtn">Logout</button>
             </div>
         </div>
-    </div>
+    </nav>
     <div id="container"></div>
     <div id="controls">
         <div class="layerControls">
@@ -73,6 +80,7 @@
             <span class="close">&times;</span>
             <h2>Save Design</h2>
             <input type="text" id="designName" placeholder="Enter design name" />
+            <input type="number" id="designPrice" placeholder="Price in PHP" min="0" step="50" />
             <button id="confirmSaveBtn">Save & Proceed to Payment</button>
         </div>
     </div>
@@ -81,13 +89,11 @@
         <button id="chatbot-toggle">💬</button>
 
         <div id="chatbot-box" class="hidden">
-            <div class="chat-header">Support</div>
+            <div class="chat-header">Cake Studio Support</div>
 
             <div id="chat-messages"></div>
 
-            <textarea id="chat-input" placeholder="Describe your issue..."></textarea>
-
-            <input type="file" id="chat-image" />
+            <textarea id="chat-input" placeholder="Ask me about pricing, delivery, flavors..."></textarea>
 
             <button id="chat-send">Send</button>
         </div>

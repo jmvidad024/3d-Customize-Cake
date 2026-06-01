@@ -1,11 +1,18 @@
 let activeOrderTab = 'paid';
+let activeRequestTab = 'pending';
 let allDesigns = [];
+let allCustomRequests = [];
+
+function formatPeso(amount) {
+  return `PHP ${Number(amount || 0).toLocaleString('en-PH')}`;
+}
 
 async function loadDashboard() {
   await refreshSession();
   await Promise.all([
     loadDesigns(),
-    loadOrders(activeOrderTab)
+    loadOrders(activeOrderTab),
+    loadCustomRequests()
   ]);
 }
 
@@ -30,6 +37,36 @@ async function loadOrders(tab) {
     console.error(error);
     container.innerHTML = '<div class="empty-state"><h2>Unable to load orders</h2><p>Please refresh and try again.</p></div>';
   }
+}
+
+async function loadCustomRequests() {
+  const container = document.getElementById('customRequestsContainer');
+  container.innerHTML = '<div class="empty-state"><h2>Loading custom requests...</h2><p>Please wait.</p></div>';
+
+  try {
+    const res = await authFetch('/api/custom-request/admin/all');
+    if (!res.ok) {
+      if (res.status === 401) {
+        window.location.href = '/login';
+        return;
+      }
+      throw new Error('Unable to load custom requests');
+    }
+    allCustomRequests = await res.json();
+    document.getElementById('customRequestCount').textContent = allCustomRequests.length;
+    renderCustomRequests(filterCustomRequests(activeRequestTab));
+  } catch (error) {
+    console.error(error);
+    container.innerHTML = '<div class="empty-state"><h2>Unable to load custom requests</h2><p>Please refresh and try again.</p></div>';
+  }
+}
+
+function filterCustomRequests(tab) {
+  if (!Array.isArray(allCustomRequests)) return [];
+  if (tab === 'all') return allCustomRequests;
+  if (tab === 'completed') return allCustomRequests.filter(request => request.status === 'completed');
+  if (tab === 'approved') return allCustomRequests.filter(request => request.status === 'approved');
+  return allCustomRequests.filter(request => !request.status || request.status === 'pending');
 }
 
 function getOrderQuery(tab) {
@@ -108,6 +145,8 @@ function renderOrders(orders, tab) {
       <div class="design-card-info">
         <p>Pickup date: ${dateText}</p>
         <p>Customer: ${getCustomerLabel(order)}</p>
+        <p>Amount: ${formatPeso(order.amount || order.design_price || 0)}</p>
+        <p>Fulfillment: ${formatLabel(order.delivery_type || 'pickup')}</p>
         <p>${getOrderDetailText(order)}</p>
       </div>
       <div class="design-card-actions"></div>
@@ -140,6 +179,123 @@ function renderOrders(orders, tab) {
 
     container.appendChild(card);
   });
+}
+
+function renderCustomRequests(requests) {
+  const container = document.getElementById('customRequestsContainer');
+  container.innerHTML = '';
+  if (!requests || requests.length === 0) {
+    container.innerHTML = `<div class="empty-state"><h2>No ${getRequestTabLabel(activeRequestTab).toLowerCase()} custom requests</h2><p>Uploaded cake references will appear here.</p></div>`;
+    return;
+  }
+
+  requests.forEach(request => {
+    const card = document.createElement('div');
+    card.className = 'dashboard-card order-card';
+    const status = getCustomRequestStatus(request.status);
+    const image = request.image_path
+      ? `<img src="${escapeHtml(request.image_path)}" class="dashboard-thumb request-thumb" alt="${escapeHtml(request.name || 'Custom request')}"/>`
+      : '';
+    const pickupDate = request.pickup_date ? new Date(request.pickup_date).toLocaleDateString() : 'Not set';
+    const price = request.final_price || request.estimated_price;
+    const priceText = price ? formatPeso(price) : 'No quote yet';
+
+    card.innerHTML = `
+      <div class="design-card-header">
+        <h3>${escapeHtml(request.name || 'Custom request')}</h3>
+        <span class="design-type-badge ${status.className}">${status.label}</span>
+      </div>
+      ${image}
+      <div class="design-card-info">
+        <p>Customer: ${escapeHtml(request.customer_name || request.customer_email || 'Customer')}</p>
+        <p>Pickup date: ${pickupDate}</p>
+        <p>Occasion: ${escapeHtml(formatLabel(request.occasion))}</p>
+        <p>Servings: ${escapeHtml(request.serving_size || 'Not specified')}</p>
+        <p>Flavor: ${escapeHtml(formatLabel(request.flavor))}</p>
+        <p>Quote: ${priceText}</p>
+        <p>${escapeHtml(request.description || '')}</p>
+      </div>
+      <div class="design-card-actions"></div>
+    `;
+
+    const actions = card.querySelector('.design-card-actions');
+    if (request.status !== 'approved') {
+      const approveBtn = document.createElement('button');
+      approveBtn.className = 'complete-btn';
+      approveBtn.textContent = 'Approve';
+      approveBtn.onclick = () => updateCustomRequest(request, 'approved');
+      actions.appendChild(approveBtn);
+    }
+
+    if (request.status === 'approved') {
+      const completeBtn = document.createElement('button');
+      completeBtn.className = 'complete-btn';
+      completeBtn.textContent = 'Complete';
+      completeBtn.onclick = () => updateCustomRequest(request, 'completed');
+      actions.appendChild(completeBtn);
+    }
+
+    if (request.status !== 'rejected' && request.status !== 'completed') {
+      const rejectBtn = document.createElement('button');
+      rejectBtn.className = 'delete-btn';
+      rejectBtn.textContent = 'Decline';
+      rejectBtn.onclick = () => updateCustomRequest(request, 'rejected');
+      actions.appendChild(rejectBtn);
+    }
+
+    container.appendChild(card);
+  });
+}
+
+function getRequestTabLabel(tab) {
+  if (tab === 'approved') return 'Approved';
+  if (tab === 'completed') return 'Completed';
+  if (tab === 'all') return 'All';
+  return 'Pending';
+}
+
+function getCustomRequestStatus(status) {
+  if (status === 'approved') return { label: 'Approved', className: 'paid' };
+  if (status === 'completed') return { label: 'Completed', className: 'completed' };
+  if (status === 'rejected') return { label: 'Declined', className: 'completed' };
+  return { label: 'Pending', className: 'pending' };
+}
+
+async function updateCustomRequest(request, status) {
+  const finalPrice = status === 'approved'
+    ? prompt('Final quote for this custom request in PHP:', request.final_price || request.estimated_price || '')
+    : request.final_price;
+
+  if (status === 'approved' && finalPrice === null) return;
+
+  const notes = status === 'rejected'
+    ? prompt('Optional note for declining this request:', request.baker_notes || '')
+    : request.baker_notes || '';
+
+  if (status === 'rejected' && notes === null) return;
+
+  try {
+    const res = await authFetch(`/api/custom-request/${request.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        status,
+        finalPrice: finalPrice || null,
+        notes
+      })
+    });
+
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      alert(error.error || 'Unable to update custom request');
+      return;
+    }
+
+    await loadCustomRequests();
+  } catch (error) {
+    console.error(error);
+    alert('Unable to update custom request');
+  }
 }
 
 function getTabLabel(tab) {
@@ -272,6 +428,7 @@ function renderDesigns(designs) {
       ${thumb}
       <div class="design-card-info">
         <p>${createdDate}</p>
+        <p>Price: ${formatPeso(design.price)}</p>
       </div>
       <div class="design-card-actions"></div>
     `;
@@ -301,6 +458,30 @@ function renderDesigns(designs) {
     };
     actions.appendChild(toggleBtn);
 
+    const priceBtn = document.createElement('button');
+    priceBtn.className = 'edit-btn';
+    priceBtn.textContent = 'Set Price';
+    priceBtn.onclick = async () => {
+      const price = prompt('Set price in PHP:', design.price || '');
+      if (price === null) return;
+      const numericPrice = Number(price);
+      if (!Number.isFinite(numericPrice) || numericPrice < 0) {
+        alert('Please enter a valid price');
+        return;
+      }
+      const res = await authFetch(`/api/designs/${design.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ price: numericPrice })
+      });
+      if (res.ok) {
+        loadDesigns();
+      } else {
+        alert('Price update failed');
+      }
+    };
+    actions.appendChild(priceBtn);
+
     const del = document.createElement('button');
     del.className = 'delete-btn';
     del.textContent = 'Delete';
@@ -318,6 +499,15 @@ document.querySelectorAll('.order-tab').forEach(btn => {
     document.querySelectorAll('.order-tab').forEach(tab => tab.classList.remove('active'));
     this.classList.add('active');
     loadOrders(this.getAttribute('data-order-tab'));
+  });
+});
+
+document.querySelectorAll('.request-tab').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.request-tab').forEach(tab => tab.classList.remove('active'));
+    this.classList.add('active');
+    activeRequestTab = this.getAttribute('data-request-tab');
+    renderCustomRequests(filterCustomRequests(activeRequestTab));
   });
 });
 
@@ -396,6 +586,21 @@ function parseDesignData(designData) {
     console.warn('Unable to parse order design data:', error);
     return null;
   }
+}
+
+function formatLabel(value) {
+  if (!value) return 'Not specified';
+  return String(value).replace(/-/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+}
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, char => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[char]));
 }
 
 loadDashboard();

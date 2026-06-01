@@ -1,13 +1,13 @@
 const chatModel = require('../models/chatbotModel');
 
 async function createTicket(req, res) {
-  const { message } = req.body;
+  const { message, designId } = req.body;
 
   if (!message) {
     return res.status(400).json({ error: 'Message is required' });
   }
 
-  await chatModel.createTicket(req.user.id, message);
+  await chatModel.createTicket(req.user.id, message, designId);
 
   res.json({ success: true });
 }

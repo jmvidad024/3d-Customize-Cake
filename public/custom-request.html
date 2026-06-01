@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Request Custom Design - 3D Cake Customizer</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/custom-request.css">
+</head>
+<body class="custom-request-page">
+
+<nav class="app-navbar">
+  <div class="app-navbar-brand">
+    <strong>Cake Studio</strong>
+    <span id="welcomeText">Custom requests</span>
+  </div>
+  <div class="profile-menu">
+    <button id="profileMenuBtn" class="profile-menu-btn" aria-expanded="false" aria-controls="profileMenu">
+      <span id="profileInitial">C</span>
+    </button>
+    <div id="profileMenu" class="profile-menu-panel" hidden>
+      <a class="customer-only" id="userDashboardLink" href="/user-dashboard">My Orders</a>
+      <a class="customer-only" href="/help-report">Help & Report</a>
+      <a class="customer-only" href="/custom-request">Request Custom Design</a>
+      <a class="admin-only" id="bakerDashboardLink" href="/baker-dashboard" style="display:none;">Baker Dashboard</a>
+      <a class="admin-only" id="chatbotDashboardLink" href="/report-dashboard" style="display:none;">Report Tickets</a>
+      <a class="admin-only" href="/?templateMode=1" style="display:none;">Create Template</a>
+      <a href="/templates">Templates</a>
+      <a href="/">Editor</a>
+      <button id="logoutBtn">Logout</button>
+    </div>
+  </div>
+</nav>
+
+<main class="dashboard-shell">
+  <div class="dashboard-header">
+    <div>
+      <p class="dashboard-kicker">Request Custom Design</p>
+      <h1>Upload Your Cake Inspiration</h1>
+      <p class="dashboard-subtitle">Share a reference photo and the details our bakers need to quote your custom cake.</p>
+    </div>
+  </div>
+
+  <div class="request-container">
+    <section class="request-form-section" aria-label="Custom cake request form">
+      <form id="customRequestForm" enctype="multipart/form-data">
+        <div class="form-section">
+          <div class="section-heading">
+            <span class="section-step">1</span>
+            <h2>Upload Cake Image</h2>
+          </div>
+
+          <div class="upload-zone" id="uploadZone">
+            <input type="file" id="cakeImage" accept="image/jpeg,image/png,image/webp" required hidden>
+
+            <div class="upload-content">
+              <div class="upload-icon" aria-hidden="true">+</div>
+              <h3>Drop your inspiration image here</h3>
+              <p>or click to browse files</p>
+              <p class="file-hint">JPG, PNG, or WebP. Maximum 10MB.</p>
+            </div>
+
+            <div id="imagePreview" class="image-preview hidden">
+              <img id="previewImg" src="" alt="Selected cake reference preview">
+              <button type="button" id="changeImageBtn" class="btn-change">Change Image</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="section-heading">
+            <span class="section-step">2</span>
+            <h2>Tell Us About Your Cake</h2>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="cakeName">Design Name *</label>
+              <input type="text" id="cakeName" placeholder="Elegant Wedding Cake" required>
+            </div>
+
+            <div class="form-group">
+              <label for="occasion">Occasion *</label>
+              <select id="occasion" required>
+                <option value="">Select Occasion</option>
+                <option value="birthday">Birthday</option>
+                <option value="wedding">Wedding</option>
+                <option value="anniversary">Anniversary</option>
+                <option value="graduation">Graduation</option>
+                <option value="corporate">Corporate Event</option>
+                <option value="holiday">Holiday</option>
+                <option value="baby-shower">Baby Shower</option>
+                <option value="engagement">Engagement</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="servingSize">Serving Size *</label>
+              <select id="servingSize" required>
+                <option value="">Select Size</option>
+                <option value="6">6 servings, 1 layer, 6 inch</option>
+                <option value="12">12 servings, 2 layers, 8 inch</option>
+                <option value="20">20 servings, 3 layers, 10 inch</option>
+                <option value="30">30+ servings, custom</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="flavorChoice">Preferred Flavor *</label>
+              <select id="flavorChoice" required>
+                <option value="">Select Flavor</option>
+                <option value="vanilla">Vanilla</option>
+                <option value="chocolate">Chocolate</option>
+                <option value="strawberry">Strawberry</option>
+                <option value="mocha">Mocha</option>
+                <option value="lemon">Lemon</option>
+                <option value="mixed">Mixed Flavors</option>
+                <option value="uncertain">Not sure - surprise me</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="dietaryNeeds">Dietary Requirements</label>
+              <select id="dietaryNeeds">
+                <option value="">None</option>
+                <option value="vegan">Vegan</option>
+                <option value="gluten-free">Gluten Free</option>
+                <option value="dairy-free">Dairy Free</option>
+                <option value="sugar-free">Sugar Free</option>
+                <option value="nut-free">Nut Free</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="section-heading">
+            <span class="section-step">3</span>
+            <h2>Additional Details</h2>
+          </div>
+
+          <div class="form-group">
+            <label for="description">Tell us more about what you like *</label>
+            <textarea id="description" placeholder="Describe the colors, decorations, style, and specific elements you want us to include." rows="6" required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="specialRequests">Special Requests</label>
+            <textarea id="specialRequests" placeholder="Allergies, custom text, color preferences, or anything else we should know." rows="4"></textarea>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="section-heading">
+            <span class="section-step">4</span>
+            <h2>When Do You Need It?</h2>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="pickupDate">Pickup/Delivery Date *</label>
+              <input type="date" id="pickupDate" required>
+            </div>
+
+            <div class="form-group">
+              <label for="deliveryType">Delivery Type *</label>
+              <select id="deliveryType" required>
+                <option value="">Select</option>
+                <option value="pickup">Pickup</option>
+                <option value="delivery">Delivery</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="deliveryAddressGroup" class="form-group hidden">
+            <label for="deliveryAddress">Delivery Address *</label>
+            <input type="text" id="deliveryAddress" placeholder="Street address and city">
+          </div>
+        </div>
+
+        <div class="price-section" aria-live="polite">
+          <div class="price-box">
+            <div class="price-label">Estimated Price</div>
+            <div class="price-breakdown">
+              <div class="price-item">
+                <span>Base Design</span>
+                <span>PHP 1,500</span>
+              </div>
+              <div class="price-item">
+                <span>Serving Size Adjustment</span>
+                <span id="sizePrice">+$0</span>
+              </div>
+              <div class="price-item">
+                <span>Delivery</span>
+                <span id="deliveryPrice">+$0</span>
+              </div>
+              <div class="price-divider"></div>
+              <div class="price-total">
+                <span>Estimated Total</span>
+                <span id="totalPrice">PHP 1,500</span>
+              </div>
+            </div>
+            <p class="price-note">Final quote may change after the baker reviews your image and requested details.</p>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-submit">Submit Design Request</button>
+          <button type="reset" id="resetBtn" class="btn-reset">Clear Form</button>
+        </div>
+      </form>
+
+      <div id="successMessage" class="success-message hidden">
+        <div class="success-content">
+          <div class="success-icon">Done</div>
+          <h2>Request Submitted Successfully</h2>
+          <p>Your custom cake request has been sent to our bakers. We will review your image and requirements, then send a final quote within 2-4 hours.</p>
+
+          <div class="next-steps">
+            <h3>What Happens Next</h3>
+            <ol>
+              <li>Baker reviews your image and requirements</li>
+              <li>We send you a design preview and final price</li>
+              <li>You approve and we confirm the order</li>
+              <li>Baking begins, and you can track progress in My Orders</li>
+            </ol>
+          </div>
+
+          <div class="action-buttons">
+            <a href="/user-dashboard" class="btn-primary">View My Orders</a>
+            <button type="button" id="newRequestBtn" class="btn-secondary">Submit Another Request</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="info-sidebar" aria-label="Custom request help">
+      <div class="info-card">
+        <h3>Tips for Best Results</h3>
+        <ul>
+          <li>Use clear, high-quality images</li>
+          <li>Straight-on or angled photos work best</li>
+          <li>Describe colors and decorations in detail</li>
+          <li>Mention specific elements you want included</li>
+        </ul>
+      </div>
+
+      <div class="info-card">
+        <h3>Timeline</h3>
+        <ul>
+          <li><strong>Quote:</strong> 2-4 hours</li>
+          <li><strong>Approval:</strong> Your decision</li>
+          <li><strong>Baking:</strong> 24-48 hours</li>
+          <li><strong>Pickup/Delivery:</strong> On schedule</li>
+        </ul>
+      </div>
+
+      <div class="info-card">
+        <h3>Common Questions</h3>
+        <p><strong>Can you exactly copy the image?</strong></p>
+        <p>Our bakers will do their best, but small variations may happen because every cake is handmade.</p>
+        <p><strong>Can I request changes after approval?</strong></p>
+        <p>Yes. Before baking starts, you can request modifications.</p>
+      </div>
+
+      <div class="info-card contact-card">
+        <h3>Need Help?</h3>
+        <p>Chat with us in the support widget or call us at:</p>
+        <p class="contact-phone">1-800-CAKE-247</p>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<script src="/js/auth.js"></script>
+<script src="/js/custom-request.js"></script>
+</body>
+</html>

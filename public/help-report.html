@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Help & Report - 3D Cake Customizer</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/help-report.css">
+</head>
+<body class="help-report-page">
+
+<nav class="app-navbar">
+  <div class="app-navbar-brand">
+    <strong>Cake Studio</strong>
+    <span id="welcomeText">Help center</span>
+  </div>
+  <div class="profile-menu">
+    <button id="profileMenuBtn" class="profile-menu-btn" aria-expanded="false" aria-controls="profileMenu">
+      <span id="profileInitial">C</span>
+    </button>
+    <div id="profileMenu" class="profile-menu-panel" hidden>
+      <a class="customer-only" id="userDashboardLink" href="/user-dashboard">My Orders</a>
+      <a class="customer-only" href="/help-report">Help & Report</a>
+      <a class="customer-only" href="/custom-request">Request Custom Design</a>
+      <a class="admin-only" id="bakerDashboardLink" href="/baker-dashboard" style="display:none;">Baker Dashboard</a>
+      <a class="admin-only" id="chatbotDashboardLink" href="/report-dashboard" style="display:none;">Report Tickets</a>
+      <a class="admin-only" href="/?templateMode=1" style="display:none;">Create Template</a>
+      <a href="/templates">Templates</a>
+      <a href="/">Editor</a>
+      <button id="logoutBtn">Logout</button>
+    </div>
+  </div>
+</nav>
+
+<main class="dashboard-shell">
+  <div class="dashboard-header">
+    <div>
+      <p class="dashboard-kicker">Help Center</p>
+      <h1>Report an Issue</h1>
+      <p class="dashboard-subtitle">Select one of your orders below to file a report or ask for help.</p>
+    </div>
+  </div>
+
+  <div class="help-report-container">
+    <section class="orders-list-panel" aria-label="Your orders">
+      <h3>Your Orders</h3>
+      <div id="ordersListContainer" class="orders-list"></div>
+    </section>
+
+    <section class="report-form-panel" aria-label="Report form">
+      <div id="noOrderSelected" class="no-selection">
+        <p>Select an order to get started</p>
+      </div>
+
+      <div id="reportForm" class="hidden">
+        <div class="report-order-header">
+          <h3 id="reportOrderTitle"></h3>
+          <a id="viewDesignLink" href="#" target="_blank" class="view-design-link">View 3D Design</a>
+        </div>
+
+        <div class="report-order-details">
+          <div class="detail-row">
+            <span class="detail-label">Pickup Date</span>
+            <span id="reportOrderDate"></span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Status</span>
+            <span id="reportOrderStatus"></span>
+          </div>
+        </div>
+
+        <form id="submitReportForm">
+          <div class="form-group">
+            <label for="reportCategory">Issue Category</label>
+            <select id="reportCategory" required>
+              <option value="">Select an issue</option>
+              <option value="quality">Quality Issue</option>
+              <option value="design">Design Problem</option>
+              <option value="delivery">Delivery/Pickup Issue</option>
+              <option value="payment">Payment Question</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="reportMessage">Describe the issue *</label>
+            <textarea id="reportMessage" placeholder="Please provide as much detail as possible..." required rows="8"></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="submit-btn">Submit Report</button>
+            <button type="button" id="clearReportBtn" class="clear-btn">Clear</button>
+          </div>
+        </form>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script src="/js/auth.js"></script>
+<script src="/js/help-report.js"></script>
+
+</body>
+</html>

@@ -93,6 +93,7 @@ async function init() {
       type ENUM('premade','custom') NOT NULL DEFAULT 'custom',
       owner_id VARCHAR(36),
       thumbnail TEXT,
+      price DECIMAL(10,2) NOT NULL DEFAULT 0,
       design LONGTEXT NOT NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE SET NULL
@@ -105,6 +106,7 @@ async function init() {
       user_id VARCHAR(36) NOT NULL,
       message TEXT NOT NULL,
       image_url TEXT DEFAULT NULL,
+      design_id INT DEFAULT NULL,
       status ENUM('open','resolved') DEFAULT 'open',
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -119,6 +121,9 @@ async function init() {
       date DATE NOT NULL,
       note TEXT,
       status VARCHAR(50) DEFAULT 'confirmed',
+      amount DECIMAL(10,2) NOT NULL DEFAULT 0,
+      delivery_type VARCHAR(50) NOT NULL DEFAULT 'pickup',
+      delivery_address TEXT DEFAULT NULL,
       paid TINYINT(1) DEFAULT 0,
       paid_at DATETIME DEFAULT NULL,
       completed_at DATETIME DEFAULT NULL,
@@ -128,12 +133,46 @@ async function init() {
     ) ENGINE=InnoDB;
   `);
 
+  await query(`
+    CREATE TABLE IF NOT EXISTS custom_requests (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      user_id VARCHAR(36) NOT NULL,
+      name VARCHAR(255) NOT NULL,
+      occasion VARCHAR(100) NOT NULL,
+      serving_size VARCHAR(50) NOT NULL,
+      flavor VARCHAR(100) NOT NULL,
+      dietary_needs VARCHAR(150) DEFAULT NULL,
+      description TEXT NOT NULL,
+      special_requests TEXT DEFAULT NULL,
+      image_path TEXT DEFAULT NULL,
+      pickup_date DATE NOT NULL,
+      delivery_type VARCHAR(50) NOT NULL,
+      delivery_address TEXT DEFAULT NULL,
+      estimated_price DECIMAL(10,2) NOT NULL DEFAULT 0,
+      final_price DECIMAL(10,2) DEFAULT NULL,
+      baker_notes TEXT DEFAULT NULL,
+      status VARCHAR(50) NOT NULL DEFAULT 'pending',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB;
+  `);
+
+  await ensureColumnExists('chat_tickets', 'design_id', 'design_id INT DEFAULT NULL');
   await ensureIndexExists('chat_tickets', 'idx_chat_user', 'user_id');
   await ensureIndexExists('chat_tickets', 'idx_chat_status', 'status');
+  await ensureIndexExists('chat_tickets', 'idx_chat_design', 'design_id');
   await ensureColumnExists('appointments', 'paid', 'paid TINYINT(1) DEFAULT 0');
+  await ensureColumnExists('appointments', 'amount', 'amount DECIMAL(10,2) NOT NULL DEFAULT 0');
+  await ensureColumnExists('appointments', 'delivery_type', "delivery_type VARCHAR(50) NOT NULL DEFAULT 'pickup'");
+  await ensureColumnExists('appointments', 'delivery_address', 'delivery_address TEXT DEFAULT NULL');
   await ensureColumnExists('appointments', 'paid_at', 'paid_at DATETIME DEFAULT NULL');
   await ensureColumnExists('appointments', 'completed_at', 'completed_at DATETIME DEFAULT NULL');
   await ensureColumnExists('designs', 'thumbnail', 'thumbnail TEXT');
+  await ensureColumnExists('designs', 'price', 'price DECIMAL(10,2) NOT NULL DEFAULT 0');
+  await ensureIndexExists('custom_requests', 'idx_custom_requests_user', 'user_id');
+  await ensureIndexExists('custom_requests', 'idx_custom_requests_status', 'status');
+  await ensureIndexExists('custom_requests', 'idx_custom_requests_pickup_date', 'pickup_date');
 }
 
 module.exports = {

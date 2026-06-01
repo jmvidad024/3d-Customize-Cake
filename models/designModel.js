@@ -14,15 +14,16 @@ function normalizeDesignRow(row) {
     type: row.type,
     owner: row.owner_id,
     thumbnail: row.thumbnail || getTemplateThumbnail(row.name),
+    price: Number(row.price || 0),
     design: row.design ? JSON.parse(row.design) : null,
     createdAt: row.created_at
   };
 }
 
-async function createDesign({ name, type = 'custom', ownerId = null, thumbnail = null, design }) {
+async function createDesign({ name, type = 'custom', ownerId = null, thumbnail = null, price = 0, design }) {
   const [result] = await execute(
-    'INSERT INTO designs (name, type, owner_id, thumbnail, design) VALUES (?, ?, ?, ?, ?)',
-    [name, type, ownerId, thumbnail, JSON.stringify(design)]
+    'INSERT INTO designs (name, type, owner_id, thumbnail, price, design) VALUES (?, ?, ?, ?, ?, ?)',
+    [name, type, ownerId, thumbnail, Number(price) || 0, JSON.stringify(design)]
   );
   return getDesignById(result.insertId);
 }
@@ -79,12 +80,13 @@ async function updateDesign(id, changes, user) {
     type: changes.type || design.type,
     owner_id: changes.owner !== undefined ? changes.owner : design.owner,
     thumbnail: changes.thumbnail !== undefined ? changes.thumbnail : design.thumbnail,
+    price: changes.price !== undefined ? Number(changes.price) || 0 : design.price,
     design: changes.design ? JSON.stringify(changes.design) : JSON.stringify(design.design)
   };
 
   await query(
-    'UPDATE designs SET name = ?, type = ?, owner_id = ?, thumbnail = ?, design = ? WHERE id = ?',
-    [updated.name, updated.type, updated.owner_id, updated.thumbnail, updated.design, id]
+    'UPDATE designs SET name = ?, type = ?, owner_id = ?, thumbnail = ?, price = ?, design = ? WHERE id = ?',
+    [updated.name, updated.type, updated.owner_id, updated.thumbnail, updated.price, updated.design, id]
   );
 
   return getDesignById(id);
@@ -120,6 +122,7 @@ async function ensureDefaultDesigns() {
       name: 'Strawberry Bliss',
       type: 'premade',
       ownerId: null,
+      price: 1800,
       thumbnail: `data:image/svg+xml;utf8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="320" height="200"><rect width="100%" height="100%" fill="#fff7f0"/><text x="50%" y="30" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="18" fill="#b33">Strawberry Bliss</text><ellipse cx="160" cy="150" rx="90" ry="18" fill="#e6e6e6"/><ellipse cx="160" cy="130" rx="70" ry="16" fill="#ff6b97"/><ellipse cx="160" cy="112" rx="60" ry="14" fill="#f6deb3"/></svg>')}`,
       design: {
         layers: [
@@ -135,6 +138,7 @@ async function ensureDefaultDesigns() {
       name: 'Classic Chocolate',
       type: 'premade',
       ownerId: null,
+      price: 1600,
       thumbnail: `data:image/svg+xml;utf8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="320" height="200"><rect width="100%" height="100%" fill="#fff7f0"/><text x="50%" y="30" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="18" fill="#432">Classic Chocolate</text><ellipse cx="160" cy="150" rx="90" ry="18" fill="#e6e6e6"/><ellipse cx="160" cy="130" rx="70" ry="16" fill="#6b3f1a"/><ellipse cx="160" cy="112" rx="60" ry="14" fill="#6b3f1a"/></svg>')}`,
       design: {
         layers: [

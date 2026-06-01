@@ -8,8 +8,12 @@ const {
   countPendingAppointmentsByUser,
   PENDING_APPOINTMENT_LIMIT,
   removeAppointment,
+  removeDraftAppointmentByUser,
   updateAppointment
 } = require('../models/appointmentModel');
+const { getDesignById } = require('../models/designModel');
+
+const DELIVERY_FEE_PHP = 250;
 
 function formatDateOnly(date) {
   const year = date.getFullYear();
@@ -54,7 +58,7 @@ async function availability(req, res) {
 }
 
 async function book(req, res) {
-  const { date, designId, note, status = 'confirmed' } = req.body;
+  const { date, designId, note, status = 'confirmed', deliveryType = 'pickup', deliveryAddress } = req.body;
   if (!date) {
     return res.status(400).json({ error: 'Date is required' });
   }
@@ -63,12 +67,24 @@ async function book(req, res) {
     return res.status(400).json({ error: dateError });
   }
 
+  if (deliveryType !== 'pickup' && !deliveryAddress) {
+    return res.status(400).json({ error: 'Delivery address is required for delivery orders' });
+  }
+
+  let amount = 0;
+  if (designId) {
+    const design = await getDesignById(designId);
+    if (!design) return res.status(404).json({ error: 'Design not found' });
+    amount = Number(design.price || 0);
+  }
+  if (deliveryType !== 'pickup') amount += DELIVERY_FEE_PHP;
+
   if (status === 'draft') {
     const existingDraft = await getDraftAppointmentByUser(req.user.id);
     if (existingDraft) {
       const appointment = await updateAppointment(
         existingDraft.id,
-        { date, designId, note, status: 'draft' },
+        { date, designId, note, status: 'draft', amount, deliveryType, deliveryAddress },
         req.user.id
       );
       return res.json({ success: true, appointment, reusedDraft: true });
@@ -92,7 +108,10 @@ async function book(req, res) {
     date,
     designId,
     note,
-    status
+    status,
+    amount,
+    deliveryType,
+    deliveryAddress
   });
   res.json({ success: true, appointment });
 }
@@ -104,6 +123,19 @@ async function draft(req, res) {
   } catch (error) {
     console.error('Draft appointment lookup failed:', error);
     res.status(500).json({ error: 'Unable to load draft appointment' });
+  }
+}
+
+async function cancelDraft(req, res) {
+  try {
+    const deleted = await removeDraftAppointmentByUser(req.user.id);
+    if (!deleted) {
+      return res.status(404).json({ error: 'No draft appointment found' });
+    }
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Draft appointment delete failed:', error);
+    res.status(500).json({ error: 'Unable to delete draft appointment' });
   }
 }
 
@@ -173,6 +205,7 @@ module.exports = {
   availability,
   book,
   draft,
+  cancelDraft,
   userAppointments,
   all,
   remove,

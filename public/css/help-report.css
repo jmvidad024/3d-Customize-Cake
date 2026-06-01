@@ -1,0 +1,365 @@
+/* Help & Report Page */
+
+.help-report-page {
+  min-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background:
+    radial-gradient(circle at top left, rgba(255, 247, 236, 0.95), transparent 34%),
+    linear-gradient(180deg, #fffaf4 0%, #f2e9df 100%);
+  color: #302638;
+}
+
+.help-report-page .dashboard-shell {
+  padding-bottom: 56px;
+}
+
+.help-report-container {
+  display: grid;
+  grid-template-columns: 330px minmax(0, 1fr);
+  gap: 20px;
+}
+
+.orders-list-panel,
+.report-form-panel {
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(97, 70, 62, 0.08);
+  border-radius: 10px;
+  box-shadow: 0 16px 40px rgba(64, 43, 36, 0.08);
+}
+
+.orders-list-panel {
+  align-self: start;
+  position: sticky;
+  top: 24px;
+  padding: 18px;
+}
+
+.orders-list-panel h3 {
+  margin: 0 0 14px;
+  color: #342536;
+  font-size: 17px;
+}
+
+.orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.order-list-item {
+  border: 1px solid #eadfd6;
+  border-radius: 8px;
+  background: #fffaf5;
+  padding: 12px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.order-list-item:hover,
+.order-list-item.active {
+  border-color: #ff6b57;
+  background: #fff3e9;
+  box-shadow: 0 10px 24px rgba(255, 107, 87, 0.12);
+}
+
+.order-item-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 7px;
+}
+
+.order-item-header h4 {
+  margin: 0;
+  color: #342536;
+  font-size: 14px;
+  line-height: 1.3;
+}
+
+.order-status-badge,
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 5px 8px;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.order-status-badge.pending,
+.status-badge.pending {
+  background: #fff7df;
+  color: #9b6a12;
+}
+
+.order-status-badge.paid,
+.status-badge.paid {
+  background: #edf7ee;
+  color: #3d7b45;
+}
+
+.order-status-badge.completed,
+.status-badge.completed {
+  background: #eaf2ff;
+  color: #335f9e;
+}
+
+.order-item-date,
+.order-item-detail {
+  margin: 5px 0 0;
+  color: #766978;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.empty-message,
+.loading,
+.error {
+  border-radius: 8px;
+  padding: 18px;
+  text-align: center;
+  color: #766978;
+  font-size: 13px;
+  background: #fff7ee;
+}
+
+.error {
+  background: #fff0ef;
+  color: #9f2f2f;
+}
+
+.report-form-panel {
+  min-height: 520px;
+  padding: 24px;
+}
+
+.no-selection {
+  min-height: 420px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed #d9c7bb;
+  border-radius: 10px;
+  background: #fffaf5;
+  color: #766978;
+  text-align: center;
+}
+
+.no-selection p {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.no-selection.hidden,
+#reportForm.hidden {
+  display: none;
+}
+
+#reportForm {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.report-order-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #eadfd6;
+}
+
+.report-order-header h3 {
+  margin: 0;
+  color: #342536;
+  font-size: 22px;
+  line-height: 1.25;
+}
+
+.view-design-link {
+  min-height: 38px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  border-radius: 8px;
+  background: #4b3a4e;
+  color: #fff;
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.view-design-link:hover {
+  background: #3b2f40;
+}
+
+.report-order-details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.detail-row {
+  border: 1px solid #eadfd6;
+  border-radius: 8px;
+  background: #fff7ee;
+  padding: 12px;
+}
+
+.detail-label {
+  display: block;
+  margin-bottom: 6px;
+  color: #8f8089;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.detail-row span:last-child {
+  color: #342536;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+#submitReportForm {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  color: #4b3a4e;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #d9c7bb;
+  border-radius: 8px;
+  background: #fff;
+  color: #302638;
+  font: inherit;
+  font-size: 14px;
+  padding: 12px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-group textarea {
+  min-height: 180px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #ff6b57;
+  box-shadow: 0 0 0 3px rgba(255, 107, 87, 0.16);
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  padding-top: 18px;
+  border-top: 1px solid #eadfd6;
+}
+
+.submit-btn,
+.clear-btn {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 8px;
+  padding: 0 18px;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.submit-btn {
+  flex: 1;
+  background: #ff6b57;
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(255, 107, 87, 0.24);
+}
+
+.submit-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px rgba(255, 107, 87, 0.3);
+}
+
+.submit-btn:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.clear-btn {
+  flex: 0 0 auto;
+  background: #efe7df;
+  color: #4b3a4e;
+}
+
+.clear-btn:hover {
+  background: #e6dbd1;
+}
+
+@media (max-width: 900px) {
+  .help-report-container {
+    grid-template-columns: 1fr;
+  }
+
+  .orders-list-panel {
+    position: static;
+  }
+
+  .orders-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .help-report-page .dashboard-shell {
+    width: min(100% - 24px, 1180px);
+  }
+
+  .report-form-panel,
+  .orders-list-panel {
+    padding: 16px;
+  }
+
+  .report-order-header,
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .view-design-link,
+  .submit-btn,
+  .clear-btn {
+    width: 100%;
+  }
+
+  .report-order-details {
+    grid-template-columns: 1fr;
+  }
+}

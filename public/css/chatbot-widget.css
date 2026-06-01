@@ -172,6 +172,69 @@ body {
   background: #fff;
 }
 
+/* Chat message styling */
+.chat-message {
+  display: flex;
+  margin: 8px 0;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message-content {
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  word-wrap: break-word;
+  max-width: 85%;
+  white-space: pre-wrap;
+}
+
+/* User messages (right side) */
+.user-message {
+  justify-content: flex-end;
+}
+
+.user-message .message-content {
+  background: linear-gradient(135deg, #4c8dff, #2563eb);
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+/* Bot messages (left side) */
+.bot-message {
+  justify-content: flex-start;
+}
+
+.bot-message .message-content {
+  background: #e5e7eb;
+  color: #1f2a37;
+  border-bottom-left-radius: 4px;
+}
+
+/* Typing indicator animation */
+.typing-indicator .message-content {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
 /* file input */
 #chat-image {
   padding: 8px;

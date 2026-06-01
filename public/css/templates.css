@@ -1,8 +1,13 @@
 body {
-    background: linear-gradient(135deg, #f5e6d3 0%, #e8d7c3 100%);
+    background:
+        radial-gradient(circle at top left, rgba(255, 246, 232, 0.95), transparent 34%),
+        linear-gradient(180deg, #f7efe7 0%, #efe3d8 100%);
     margin: 0;
-    padding: 20px;
-    font-family: Arial, sans-serif;
+    padding: 0 0 44px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #302638;
 }
 
 .top-bar {
@@ -106,7 +111,8 @@ body {
 
 .container {
     max-width: 1200px;
-    margin: 0 auto;
+    margin: 24px auto 0;
+    width: min(1200px, calc(100% - 32px));
 }
 
 .header {
@@ -115,13 +121,13 @@ body {
 }
 
 .header h1 {
-    color: #6b4423;
+    color: #342536;
     margin: 0;
     font-size: 32px;
 }
 
 .header p {
-    color: #8b5a2b;
+    color: #766978;
     margin-top: 10px;
 }
 
@@ -133,7 +139,7 @@ body {
 }
 
 .create-custom-btn {
-    background: linear-gradient(135deg, #ff6b6b, #ff5252);
+    background: #ff6b57;
     color: #fff;
     border: none;
     padding: 12px 30px;
@@ -150,9 +156,27 @@ body {
 }
 
 .draft-notice {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
     margin: 20px 0;
+    padding: 14px 16px;
+    border: 1px solid #f0d2c2;
+    border-radius: 8px;
+    background: #fff7ee;
     font-size: 14px;
-    color: #fff;
+    color: #342536;
+}
+
+.draft-notice[hidden] {
+    display: none;
+}
+
+.draft-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
 }
 
 .templates-grid {
@@ -163,8 +187,9 @@ body {
 }
 
 .template-card {
-    background: #fff;
-    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(97, 70, 62, 0.08);
+    border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s, box-shadow 0.3s;
@@ -188,14 +213,50 @@ body {
 
 .template-info h3 {
     margin: 0 0 10px 0;
-    color: #6b4423;
+    color: #342536;
     font-size: 18px;
 }
 
 .template-info p {
     margin: 0 0 15px 0;
-    color: #8b5a2b;
+    color: #72646f;
     font-size: 14px;
+}
+
+.template-price {
+    color: #342536 !important;
+    font-size: 18px !important;
+    font-weight: 800;
+}
+
+.price-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+    margin: 12px 0;
+    border: 1px solid #eadfd6;
+    border-radius: 8px;
+    background: #fff7ee;
+}
+
+.price-summary div {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    color: #766978;
+    font-size: 14px;
+}
+
+.price-summary div:last-child {
+    padding-top: 8px;
+    border-top: 1px solid #eadfd6;
+    color: #342536;
+    font-weight: 800;
+}
+
+.hidden {
+    display: none !important;
 }
 
 .template-actions {
@@ -242,8 +303,11 @@ body {
     bottom: 0;
     background: rgba(0, 0, 0, 0.6);
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
+    box-sizing: border-box;
+    overflow-y: auto;
+    padding: 24px 16px;
     z-index: 1000;
 }
 
@@ -253,6 +317,9 @@ body {
     padding: 30px;
     max-width: 500px;
     width: 90%;
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+    box-sizing: border-box;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
 }
 
@@ -313,6 +380,28 @@ body {
     background: #ccc;
 }
 
+.btn-danger {
+    flex: 1;
+    background: #b84034;
+    color: #fff;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.btn-danger:hover {
+    background: #943025;
+}
+
+.btn-danger:disabled,
+.btn-primary:disabled,
+.btn-secondary:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+}
+
 .btn-success {
     background: #4caf50;
     color: #fff;
@@ -320,4 +409,23 @@ body {
 
 .btn-success:hover {
     background: #45a049;
+}
+
+.app-navbar {
+    padding: 10px 12px 10px 16px;
+}
+
+.app-navbar .profile-menu-btn {
+    background: linear-gradient(135deg, #ff7b54, #ff4e88);
+    box-shadow: 0 10px 24px rgba(255, 94, 136, 0.28);
+}
+
+.app-navbar .profile-menu-btn:hover,
+.app-navbar .profile-menu-btn[aria-expanded="true"] {
+    background: linear-gradient(135deg, #ff7b54, #ff4e88);
+}
+
+.app-navbar .profile-menu-panel a,
+.app-navbar .profile-menu-panel button {
+    color: #4d3b50;
 }

@@ -3,7 +3,7 @@ const DAILY_CAPACITY = 3;
 const PENDING_APPOINTMENT_LIMIT = 3;
 
 function appointmentSelectSql(whereClause = '') {
-  return `SELECT a.*, u.name AS customer_name, u.email AS customer_email, d.name AS design_name, d.thumbnail AS design_thumbnail, d.design AS design_data, d.type AS design_type, d.owner_id AS design_owner FROM appointments a LEFT JOIN users u ON a.user_id = u.id LEFT JOIN designs d ON a.design_id = d.id${whereClause} ORDER BY a.date ASC, a.created_at DESC`;
+  return `SELECT a.*, u.name AS customer_name, u.email AS customer_email, d.name AS design_name, d.thumbnail AS design_thumbnail, d.price AS design_price, d.design AS design_data, d.type AS design_type, d.owner_id AS design_owner FROM appointments a LEFT JOIN users u ON a.user_id = u.id LEFT JOIN designs d ON a.design_id = d.id${whereClause} ORDER BY a.date ASC, a.created_at DESC`;
 }
 
 function parseDesignData(designData) {
@@ -108,10 +108,10 @@ async function getAvailability(date) {
   };
 }
 
-async function addAppointment({ userId, date, designId, note, status = 'confirmed' }) {
+async function addAppointment({ userId, date, designId, note, status = 'confirmed', amount = 0, deliveryType = 'pickup', deliveryAddress = null }) {
   const [result] = await execute(
-    'INSERT INTO appointments (user_id, design_id, date, note, status) VALUES (?, ?, ?, ?, ?)',
-    [userId, designId || null, date, note || null, status]
+    'INSERT INTO appointments (user_id, design_id, date, note, status, amount, delivery_type, delivery_address) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+    [userId, designId || null, date, note || null, status, Number(amount) || 0, deliveryType || 'pickup', deliveryAddress || null]
   );
   const rows = await query('SELECT * FROM appointments WHERE id = ?', [result.insertId]);
   return rows[0] || null;
@@ -141,6 +141,9 @@ async function updateAppointment(id, changes, userId, isAdmin = false) {
     date: changes.date !== undefined ? changes.date : appt.date,
     note: changes.note !== undefined ? changes.note : appt.note,
     status: changes.status !== undefined ? changes.status : appt.status,
+    amount: changes.amount !== undefined ? Number(changes.amount) || 0 : appt.amount,
+    delivery_type: changes.deliveryType !== undefined ? changes.deliveryType : appt.delivery_type,
+    delivery_address: changes.deliveryAddress !== undefined ? changes.deliveryAddress : appt.delivery_address,
     paid: changes.paid !== undefined ? changes.paid : appt.paid,
     paid_at: changes.paid_at !== undefined ? changes.paid_at : appt.paid_at,
     completed_at: changes.completed_at !== undefined ? changes.completed_at : appt.completed_at
@@ -151,8 +154,8 @@ async function updateAppointment(id, changes, userId, isAdmin = false) {
   }
 
   await query(
-    'UPDATE appointments SET design_id = ?, date = ?, note = ?, status = ?, paid = ?, paid_at = ?, completed_at = ? WHERE id = ?',
-    [updated.design_id, updated.date, updated.note, updated.status, updated.paid, updated.paid_at, updated.completed_at, id]
+    'UPDATE appointments SET design_id = ?, date = ?, note = ?, status = ?, amount = ?, delivery_type = ?, delivery_address = ?, paid = ?, paid_at = ?, completed_at = ? WHERE id = ?',
+    [updated.design_id, updated.date, updated.note, updated.status, updated.amount, updated.delivery_type, updated.delivery_address, updated.paid, updated.paid_at, updated.completed_at, id]
   );
   const out = await query('SELECT * FROM appointments WHERE id = ?', [id]);
   return out[0];
@@ -160,6 +163,14 @@ async function updateAppointment(id, changes, userId, isAdmin = false) {
 
 async function removeAppointment(id) {
   const result = await query('DELETE FROM appointments WHERE id = ?', [id]);
+  return result.affectedRows > 0;
+}
+
+async function removeDraftAppointmentByUser(userId) {
+  const result = await query(
+    'DELETE FROM appointments WHERE user_id = ? AND status = ?',
+    [userId, 'draft']
+  );
   return result.affectedRows > 0;
 }
 
@@ -173,6 +184,7 @@ module.exports = {
   addAppointment,
   updateAppointment,
   removeAppointment,
+  removeDraftAppointmentByUser,
   DAILY_CAPACITY,
   PENDING_APPOINTMENT_LIMIT
 };

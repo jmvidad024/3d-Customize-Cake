@@ -88,11 +88,18 @@ function updateAuthUI(user) {
   }
   const reportLink = document.getElementById('chatbotDashboardLink');
   if (reportLink) {
+    reportLink.href = '/report-dashboard';
     reportLink.style.display = ['baker', 'admin'].includes(user.role) ? 'inline-flex' : 'none';
   }
+  document.querySelectorAll('.customer-only').forEach(el => {
+    el.style.display = user.role === 'customer' ? 'flex' : 'none';
+  });
+  document.querySelectorAll('.admin-only').forEach(el => {
+    el.style.display = ['baker', 'admin'].includes(user.role) ? 'flex' : 'none';
+  });
   const userLink = document.getElementById('userDashboardLink');
   if (userLink) {
-    userLink.style.display = 'inline-flex';
+    userLink.style.display = user.role === 'customer' ? 'inline-flex' : 'none';
   }
   const logoutBtn = document.getElementById('logoutBtn');
   if (logoutBtn) {

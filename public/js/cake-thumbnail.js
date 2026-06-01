@@ -325,23 +325,41 @@ function addCakeThumbnailChocolateChips(scene, point, hitObject) {
 
 function addCakeThumbnailCustomText(scene, point, text = 'Happy Cake') {
   const canvas = document.createElement('canvas');
-  canvas.width = 512;
-  canvas.height = 128;
+  canvas.width = 1024;
+  canvas.height = 256;
   const ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#fff';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = '#ff4f81';
-  ctx.font = 'bold 48px Arial';
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+
+  const label = String(text || 'Happy Cake').slice(0, 28);
+  let fontSize = 118;
+  ctx.font = `900 ${fontSize}px Arial`;
+  while (ctx.measureText(label).width > canvas.width - 96 && fontSize > 54) {
+    fontSize -= 4;
+    ctx.font = `900 ${fontSize}px Arial`;
+  }
+
+  ctx.lineJoin = 'round';
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.45)';
+  ctx.shadowBlur = 8;
+  ctx.shadowOffsetY = 5;
+  ctx.lineWidth = 18;
+  ctx.strokeStyle = '#3a1f18';
+  ctx.strokeText(label, canvas.width / 2, canvas.height / 2);
+  ctx.shadowColor = 'transparent';
+  ctx.lineWidth = 7;
+  ctx.strokeStyle = '#ff6b97';
+  ctx.strokeText(label, canvas.width / 2, canvas.height / 2);
+  ctx.fillStyle = '#fff8ea';
+  ctx.fillText(label, canvas.width / 2, canvas.height / 2);
 
   const plane = new THREE.Mesh(
-    new THREE.PlaneGeometry(1.2, 0.3),
-    new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(canvas), transparent: true, opacity: 1, depthWrite: false })
+    new THREE.PlaneGeometry(1.8, 0.45),
+    new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(canvas), transparent: true, opacity: 1, depthWrite: false, side: THREE.DoubleSide })
   );
   plane.position.copy(point);
-  plane.position.y += 0.03;
+  plane.position.y += 0.08;
   plane.rotation.x = -Math.PI / 2;
   scene.add(plane);
 }

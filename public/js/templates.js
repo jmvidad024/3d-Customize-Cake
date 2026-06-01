@@ -1,4 +1,9 @@
 let currentUser = null;
+const DELIVERY_FEE_PHP = 250;
+
+function formatPeso(amount) {
+  return `PHP ${Number(amount || 0).toLocaleString('en-PH')}`;
+}
 
 function isStaffUser() {
   return currentUser && ['admin', 'baker'].includes(currentUser.role);
@@ -29,6 +34,7 @@ async function loadTemplates() {
         <div class="template-info">
           <h3>${template.name}</h3>
           <p>${isStaffUser() ? 'Pre-made design - View only' : 'Pre-made design - Ready to book'}</p>
+          <p class="template-price">${formatPeso(template.price)}</p>
           <div class="template-actions">
             <button class="btn-secondary" data-view-template-id="${template.id}">View 3D</button>
             ${isStaffUser() ? '' : `<button class="btn-primary" data-template-id="${template.id}">Book</button>`}
@@ -60,25 +66,77 @@ async function loadDraftAppointment() {
     const res = await authFetch('/api/appointments/draft');
     if (!res.ok) {
       draftAppointment = null;
-      document.getElementById('draftNotice').textContent = '';
+      const draftNotice = document.getElementById('draftNotice');
+      draftNotice.textContent = '';
+      draftNotice.hidden = true;
       return;
     }
     const data = await res.json();
     draftAppointment = data.draft || null;
     const draftNotice = document.getElementById('draftNotice');
     if (draftAppointment) {
-      draftNotice.innerHTML = `You have an unfinished custom cake appointment for <strong>${draftAppointment.date}</strong>. <button class="btn-primary" id="continueDraftBtn">Continue</button>`;
+      draftNotice.hidden = false;
+      draftNotice.innerHTML = `
+        <span>You have an unfinished custom cake appointment for <strong>${draftAppointment.date}</strong>.</span>
+        <span class="draft-actions">
+          <button class="btn-primary" id="continueDraftBtn">Continue</button>
+          <button class="btn-danger" id="deleteDraftBtn">Delete draft</button>
+        </span>
+      `;
       const continueBtn = document.getElementById('continueDraftBtn');
       if (continueBtn) {
         continueBtn.addEventListener('click', () => {
           window.location.href = '/';
         });
       }
+      const deleteBtn = document.getElementById('deleteDraftBtn');
+      if (deleteBtn) {
+        deleteBtn.addEventListener('click', deleteDraftAppointment);
+      }
     } else {
       draftNotice.textContent = '';
+      draftNotice.hidden = true;
     }
   } catch (error) {
     console.error('Unable to load draft appointment', error);
+  }
+}
+
+async function deleteDraftAppointment() {
+  if (!draftAppointment) return;
+  const ok = confirm('Delete your unfinished custom cake draft? You can book a new date afterward.');
+  if (!ok) return;
+
+  const deleteBtn = document.getElementById('deleteDraftBtn');
+  if (deleteBtn) {
+    deleteBtn.disabled = true;
+    deleteBtn.textContent = 'Deleting...';
+  }
+
+  try {
+    const res = await authFetch('/api/appointments/draft', { method: 'DELETE' });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      alert(data.error || 'Unable to delete draft appointment');
+      if (deleteBtn) {
+        deleteBtn.disabled = false;
+        deleteBtn.textContent = 'Delete draft';
+      }
+      return;
+    }
+
+    draftAppointment = null;
+    const draftNotice = document.getElementById('draftNotice');
+    draftNotice.textContent = '';
+    draftNotice.hidden = true;
+    alert('Draft deleted. You can start a new custom cake appointment now.');
+  } catch (error) {
+    console.error('Unable to delete draft appointment', error);
+    alert('Unable to delete draft appointment');
+    if (deleteBtn) {
+      deleteBtn.disabled = false;
+      deleteBtn.textContent = 'Delete draft';
+    }
   }
 }
 
@@ -312,23 +370,41 @@ function addExactChocolateChips(scene, point, hitObject) {
 
 function addExactCustomText(scene, point, text = 'Happy Cake') {
   const canvas = document.createElement('canvas');
-  canvas.width = 512;
-  canvas.height = 128;
+  canvas.width = 1024;
+  canvas.height = 256;
   const ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#fff';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = '#ff4f81';
-  ctx.font = 'bold 48px Arial';
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+
+  const label = String(text || 'Happy Cake').slice(0, 28);
+  let fontSize = 118;
+  ctx.font = `900 ${fontSize}px Arial`;
+  while (ctx.measureText(label).width > canvas.width - 96 && fontSize > 54) {
+    fontSize -= 4;
+    ctx.font = `900 ${fontSize}px Arial`;
+  }
+
+  ctx.lineJoin = 'round';
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.45)';
+  ctx.shadowBlur = 8;
+  ctx.shadowOffsetY = 5;
+  ctx.lineWidth = 18;
+  ctx.strokeStyle = '#3a1f18';
+  ctx.strokeText(label, canvas.width / 2, canvas.height / 2);
+  ctx.shadowColor = 'transparent';
+  ctx.lineWidth = 7;
+  ctx.strokeStyle = '#ff6b97';
+  ctx.strokeText(label, canvas.width / 2, canvas.height / 2);
+  ctx.fillStyle = '#fff8ea';
+  ctx.fillText(label, canvas.width / 2, canvas.height / 2);
 
   const plane = new THREE.Mesh(
-    new THREE.PlaneGeometry(1.2, 0.3),
-    new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(canvas), transparent: true, opacity: 1, depthWrite: false })
+    new THREE.PlaneGeometry(1.8, 0.45),
+    new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(canvas), transparent: true, opacity: 1, depthWrite: false, side: THREE.DoubleSide })
   );
   plane.position.copy(point);
-  plane.position.y += 0.03;
+  plane.position.y += 0.08;
   plane.rotation.x = -Math.PI / 2;
   scene.add(plane);
 }
@@ -439,12 +515,23 @@ function showBookingModal(template) {
   modal.className = 'modal-content';
 
   const thumbSrc = getTemplateThumbnail(template);
+  const basePrice = Number(template.price || 0);
 
   modal.innerHTML = `
     <h3>${template.name}</h3>
     <img src="${thumbSrc}" alt="${template.name}" class="modal-image" />
-    <p>Select your preferred date for this cake design.</p>
+    <p>Select your preferred date and fulfillment option for this cake design.</p>
+    <div class="price-summary">
+      <div><span>Template price</span><strong>${formatPeso(basePrice)}</strong></div>
+      <div><span>Delivery fee</span><strong id="templateDeliveryFee">PHP 0</strong></div>
+      <div><span>Total</span><strong id="templateTotalPrice">${formatPeso(basePrice)}</strong></div>
+    </div>
     <input type="date" id="bookingDate" class="date-picker" />
+    <select id="bookingDeliveryType" class="date-picker">
+      <option value="pickup">Pickup</option>
+      <option value="delivery">Delivery (+${formatPeso(DELIVERY_FEE_PHP)})</option>
+    </select>
+    <input type="text" id="bookingDeliveryAddress" class="date-picker hidden" placeholder="Delivery address" />
     <div class="status-text" id="bookingStatus"></div>
     <div class="modal-buttons">
       <button class="btn-secondary" id="closeBtn">Close</button>
@@ -460,8 +547,20 @@ function showBookingModal(template) {
   const checkBtn = modal.querySelector('#checkBtn');
   const bookBtn = modal.querySelector('#bookBtn');
   const dateInput = modal.querySelector('#bookingDate');
+  const deliveryTypeInput = modal.querySelector('#bookingDeliveryType');
+  const deliveryAddressInput = modal.querySelector('#bookingDeliveryAddress');
   const status = modal.querySelector('#bookingStatus');
   applyBookingDateRange(dateInput);
+
+  const updateTemplateTotal = () => {
+    const deliveryFee = deliveryTypeInput.value === 'delivery' ? DELIVERY_FEE_PHP : 0;
+    modal.querySelector('#templateDeliveryFee').textContent = formatPeso(deliveryFee);
+    modal.querySelector('#templateTotalPrice').textContent = formatPeso(basePrice + deliveryFee);
+    deliveryAddressInput.classList.toggle('hidden', deliveryTypeInput.value !== 'delivery');
+    deliveryAddressInput.required = deliveryTypeInput.value === 'delivery';
+  };
+  deliveryTypeInput.addEventListener('change', updateTemplateTotal);
+  updateTemplateTotal();
 
   const removeModal = () => {
     if (document.body.contains(overlay)) document.body.removeChild(overlay);
@@ -484,34 +583,35 @@ function showBookingModal(template) {
       setStatus(status, getBookingDateRangeText());
       return;
     }
+    if (deliveryTypeInput.value === 'delivery' && !deliveryAddressInput.value.trim()) {
+      setStatus(status, 'Please enter a delivery address');
+      return;
+    }
 
     try {
+      bookBtn.disabled = true;
       const res = await authFetch('/api/appointments/book', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ date })
+        body: JSON.stringify({
+          date,
+          designId: template.id,
+          deliveryType: deliveryTypeInput.value,
+          deliveryAddress: deliveryAddressInput.value.trim()
+        })
       });
       const data = await res.json();
 
       if (!res.ok) {
         setStatus(status, data.error || 'Booking failed');
+        bookBtn.disabled = false;
         return;
       }
 
       const appt = data.appointment;
-      const attachRes = await authFetch(`/api/appointments/${appt.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ designId: template.id })
-      });
-
-      if (!attachRes.ok) {
-        setStatus(status, 'Booked but failed to attach design');
-        return;
-      }
-
-      status.innerHTML = 'Booked! <button class="btn-success" id="payNowBtn">Pay Now</button>';
+      status.innerHTML = `Booked for ${formatPeso(appt.amount)}. <button class="btn-success" id="payNowBtn">Pay Now</button>`;
       status.style.color = '#4caf50';
+      bookBtn.disabled = false;
 
       const payNowBtn = modal.querySelector('#payNowBtn');
       if (payNowBtn) {
@@ -537,6 +637,7 @@ function showBookingModal(template) {
     } catch (e) {
       console.error(e);
       setStatus(status, 'Booking error');
+      bookBtn.disabled = false;
     }
   });
 }

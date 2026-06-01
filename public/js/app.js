@@ -229,16 +229,39 @@ function createTextPlane(text, opacity = 1) {
     ctx.fillStyle = 'rgba(0,0,0,0)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    ctx.font = 'bold 90px Arial';
-
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
-    // Soft dark frosting color
-    ctx.fillStyle = '#4a2e1f';
+    const label = String(text || 'Happy Cake').slice(0, 28);
+    let fontSize = 118;
+    ctx.font = `900 ${fontSize}px Arial`;
+    while (ctx.measureText(label).width > canvas.width - 96 && fontSize > 54) {
+        fontSize -= 4;
+        ctx.font = `900 ${fontSize}px Arial`;
+    }
 
+    ctx.lineJoin = 'round';
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.45)';
+    ctx.shadowBlur = 8;
+    ctx.shadowOffsetY = 5;
+    ctx.lineWidth = 18;
+    ctx.strokeStyle = '#3a1f18';
+    ctx.strokeText(
+        label,
+        canvas.width / 2,
+        canvas.height / 2
+    );
+    ctx.shadowColor = 'transparent';
+    ctx.lineWidth = 7;
+    ctx.strokeStyle = '#ff6b97';
+    ctx.strokeText(
+        label,
+        canvas.width / 2,
+        canvas.height / 2
+    );
+    ctx.fillStyle = '#fff8ea';
     ctx.fillText(
-        text,
+        label,
         canvas.width / 2,
         canvas.height / 2
     );
@@ -250,11 +273,13 @@ function createTextPlane(text, opacity = 1) {
             map: texture,
             transparent: true,
             opacity,
-            depthWrite: false
+            depthWrite: false,
+            depthTest: true,
+            side: THREE.DoubleSide
         });
 
     const plane = new THREE.Mesh(
-        new THREE.PlaneGeometry(1.2, 0.3),
+        new THREE.PlaneGeometry(1.8, 0.45),
         material
     );
 
@@ -272,8 +297,8 @@ function addCustomText(point, normal) {
 
     plane.position.copy(point);
 
-    // Slightly above cake
-    plane.position.y += 0.03;
+    // Keep the frosting text visibly above the cake surface.
+    plane.position.y += 0.08;
 
     // Lay flat on top
     plane.rotation.x = -Math.PI / 2;

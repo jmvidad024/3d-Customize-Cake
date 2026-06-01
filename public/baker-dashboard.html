@@ -7,18 +7,25 @@
 <link rel="stylesheet" href="/css/style.css">
 </head>
 <body class="dashboard-page">
-<div class="dashboard-profile-menu profile-menu">
-  <button id="profileMenuBtn" class="profile-menu-btn" aria-expanded="false" aria-controls="profileMenu">
-    <span id="profileInitial">C</span>
-  </button>
-  <div id="profileMenu" class="profile-menu-panel" hidden>
-    <a href="/chatbot-dashboard">Report Tickets</a>
-    <a href="/?templateMode=1">Create Template</a>
-    <a href="/templates.html">Templates</a>
-    <a href="/">Editor</a>
-    <button id="logoutBtn">Logout</button>
+<nav class="app-navbar">
+  <div class="app-navbar-brand">
+    <strong>Cake Studio</strong>
+    <span id="welcomeText">Baker workspace</span>
   </div>
-</div>
+  <div class="profile-menu">
+    <button id="profileMenuBtn" class="profile-menu-btn" aria-expanded="false" aria-controls="profileMenu">
+      <span id="profileInitial">C</span>
+    </button>
+    <div id="profileMenu" class="profile-menu-panel" hidden>
+      <a class="admin-only" id="bakerDashboardLink" href="/baker-dashboard">Baker Dashboard</a>
+      <a class="admin-only" id="chatbotDashboardLink" href="/report-dashboard">Report Tickets</a>
+      <a class="admin-only" href="/?templateMode=1">Create Template</a>
+      <a href="/templates">Templates</a>
+      <a href="/">Editor</a>
+      <button id="logoutBtn">Logout</button>
+    </div>
+  </div>
+</nav>
 <div class="dashboard-shell">
   <div class="dashboard-header">
     <div>
@@ -41,6 +48,10 @@
       <span>Custom Designs</span>
       <strong id="customCount">0</strong>
     </div>
+    <div class="stat-card">
+      <span>Image Requests</span>
+      <strong id="customRequestCount">0</strong>
+    </div>
   </div>
 
   <section class="dashboard-panel">
@@ -56,6 +67,22 @@
       </div>
     </div>
     <div id="ordersContainer" class="dashboard-grid"></div>
+  </section>
+
+  <section class="dashboard-panel">
+    <div class="panel-heading">
+      <div>
+        <h2>Custom Image Requests</h2>
+        <p>Review customer-uploaded cake references and requested details.</p>
+      </div>
+      <div class="filter-section">
+        <button class="request-tab active" data-request-tab="pending">Pending</button>
+        <button class="request-tab" data-request-tab="approved">Approved</button>
+        <button class="request-tab" data-request-tab="completed">Completed</button>
+        <button class="request-tab" data-request-tab="all">All</button>
+      </div>
+    </div>
+    <div id="customRequestsContainer" class="dashboard-grid"></div>
   </section>
 
   <section class="dashboard-panel">

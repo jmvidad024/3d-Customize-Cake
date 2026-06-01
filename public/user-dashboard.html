@@ -9,18 +9,28 @@
 <link rel="stylesheet" href="/css/chatbot-widget.css">
 </head>
 <body class="dashboard-page">
-<div class="dashboard-profile-menu profile-menu">
-  <button id="profileMenuBtn" class="profile-menu-btn" aria-expanded="false" aria-controls="profileMenu">
-    <span id="profileInitial">C</span>
-  </button>
-  <div id="profileMenu" class="profile-menu-panel" hidden>
-    <a id="chatbotDashboardLink" href="/chatbot-dashboard" style="display:none;">Report Tickets</a>
-    <a href="/templates.html">Templates</a>
-    <a href="/">Editor</a>
-    <a id="bakerDashboardLink" href="/baker-dashboard" style="display:none;">Baker Dashboard</a>
-    <button id="logoutBtn">Logout</button>
+<nav class="app-navbar">
+  <div class="app-navbar-brand">
+    <strong>Cake Studio</strong>
+    <span id="welcomeText">Your workspace</span>
   </div>
-</div>
+  <div class="profile-menu">
+    <button id="profileMenuBtn" class="profile-menu-btn" aria-expanded="false" aria-controls="profileMenu">
+      <span id="profileInitial">C</span>
+    </button>
+    <div id="profileMenu" class="profile-menu-panel" hidden>
+      <a class="customer-only" id="userDashboardLink" href="/user-dashboard">My Orders</a>
+      <a class="customer-only" href="/help-report">Help & Report</a>
+      <a class="customer-only" href="/custom-request">Request Custom Design</a>
+      <a class="admin-only" id="bakerDashboardLink" href="/baker-dashboard" style="display:none;">Baker Dashboard</a>
+      <a class="admin-only" id="chatbotDashboardLink" href="/report-dashboard" style="display:none;">Report Tickets</a>
+      <a class="admin-only" href="/?templateMode=1" style="display:none;">Create Template</a>
+      <a href="/templates">Templates</a>
+      <a href="/">Editor</a>
+      <button id="logoutBtn">Logout</button>
+    </div>
+  </div>
+</nav>
 <div class="dashboard-shell">
   <div class="dashboard-header">
     <div>
@@ -30,21 +40,46 @@
     </div>
   </div>
 
-  <div id="ordersContainer" class="designs-grid"></div>
-  <div id="designsContainer" class="designs-grid"></div>
+  <section class="dashboard-panel">
+    <div class="panel-heading">
+      <div>
+        <h2>Booked Orders</h2>
+        <p>Track cake orders created from templates or saved 3D designs.</p>
+      </div>
+    </div>
+    <div id="ordersContainer" class="dashboard-grid"></div>
+  </section>
+
+  <section class="dashboard-panel">
+    <div class="panel-heading">
+      <div>
+        <h2>Custom Image Requests</h2>
+        <p>Requests submitted from inspiration photos.</p>
+      </div>
+    </div>
+    <div id="customRequestsContainer" class="dashboard-grid"></div>
+  </section>
+
+  <section class="dashboard-panel">
+    <div class="panel-heading">
+      <div>
+        <h2>Saved Designs</h2>
+        <p>Your saved 3D cake designs.</p>
+      </div>
+    </div>
+    <div id="designsContainer" class="dashboard-grid"></div>
+  </section>
 </div>
 
 <div id="chatbot-widget">
         <button id="chatbot-toggle">💬</button>
 
         <div id="chatbot-box" class="hidden">
-            <div class="chat-header">Support</div>
+            <div class="chat-header">Cake Studio Support</div>
 
             <div id="chat-messages"></div>
 
-            <textarea id="chat-input" placeholder="Describe your issue..."></textarea>
-
-            <input type="file" id="chat-image" />
+            <textarea id="chat-input" placeholder="Ask me about pricing, delivery, flavors..."></textarea>
 
             <button id="chat-send">Send</button>
         </div>

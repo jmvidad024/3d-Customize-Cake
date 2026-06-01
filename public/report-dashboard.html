@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Support Inbox</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/report-dashboard.css">
+</head>
+<body class="dashboard-page support-page">
+
+<nav class="app-navbar">
+    <div class="app-navbar-brand">
+        <strong>Cake Studio</strong>
+        <span id="welcomeText">Support inbox</span>
+    </div>
+    <div class="profile-menu">
+        <button id="profileMenuBtn" class="profile-menu-btn" aria-expanded="false" aria-controls="profileMenu">
+            <span id="profileInitial">C</span>
+        </button>
+        <div id="profileMenu" class="profile-menu-panel" hidden>
+            <a class="admin-only" id="bakerDashboardLink" href="/baker-dashboard">Baker Dashboard</a>
+            <a class="admin-only" id="chatbotDashboardLink" href="/report-dashboard">Report Tickets</a>
+            <a class="admin-only" href="/?templateMode=1">Create Template</a>
+            <a href="/templates">Templates</a>
+            <a href="/">Editor</a>
+            <button id="logoutBtn">Logout</button>
+        </div>
+    </div>
+</nav>
+
+<div class="chat-admin-container">
+
+  <!-- LEFT: ticket list -->
+  <div class="ticket-list" id="ticket-list"></div>
+
+  <!-- RIGHT: chat view -->
+  <div class="ticket-view" id="ticket-view">
+    <p>Select a ticket to view conversation</p>
+  </div>
+
+</div>
+
+<div id="tickets"></div>
+
+<script src="/js/auth.js"></script>
+<script>
+  (async () => {
+    const user = await refreshSession(); // OR requireAuthPage()
+    if (!user) window.location.href = '/login';
+  })();
+</script>
+<script src="/js/report-dashboard.js"></script>
+
+
+</body>
+</html>

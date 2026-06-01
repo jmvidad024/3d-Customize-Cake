@@ -2,8 +2,13 @@ async function loadDashboard() {
   await refreshSession();
   await Promise.all([
     loadOrders(),
+    loadCustomRequests(),
     loadMyDesigns()
   ]);
+}
+
+function formatPeso(amount) {
+  return `PHP ${Number(amount || 0).toLocaleString('en-PH')}`;
 }
 
 async function loadOrders() {
@@ -24,6 +29,26 @@ async function loadOrders() {
   } catch (error) {
     console.error(error);
     container.innerHTML = '<div class="empty-state"><h2>Unable to load orders</h2><p>Please refresh or login again.</p></div>';
+  }
+}
+
+async function loadCustomRequests() {
+  const container = document.getElementById('customRequestsContainer');
+  container.innerHTML = '<div class="empty-state"><h2>Loading custom requests...</h2><p>Please wait.</p></div>';
+
+  try {
+    const res = await authFetch('/api/custom-request');
+    if (!res.ok) {
+      if (res.status === 401) {
+        window.location.href = '/login';
+        return;
+      }
+      throw new Error('Unable to load custom requests');
+    }
+    renderCustomRequests(await res.json());
+  } catch (error) {
+    console.error(error);
+    container.innerHTML = '<div class="empty-state"><h2>Unable to load custom requests</h2><p>Please refresh or login again.</p></div>';
   }
 }
 
@@ -67,6 +92,8 @@ function renderOrders(orders) {
       ${thumb}
       <div class="design-card-info">
         <p>Pickup date: ${dateText}</p>
+        <p>Amount: ${formatPeso(order.amount || order.design_price || 0)}</p>
+        <p>Fulfillment: ${formatLabel(order.delivery_type || 'pickup')}</p>
         <p>${status.message}</p>
       </div>
       <div class="design-card-actions"></div>
@@ -85,10 +112,50 @@ function renderOrders(orders) {
   });
 }
 
+function renderCustomRequests(requests) {
+  const container = document.getElementById('customRequestsContainer');
+  container.innerHTML = '';
+  if (!requests || requests.length === 0) {
+    container.innerHTML = '<div class="empty-state"><h2>No custom image requests yet</h2><p>Your uploaded cake references will appear here.</p></div>';
+    return;
+  }
+
+  requests.forEach(request => {
+    const card = document.createElement('div');
+    card.className = 'design-card';
+    const status = getCustomRequestStatus(request.status);
+    const image = request.image_path
+      ? `<img src="${escapeHtml(request.image_path)}" class="dashboard-thumb request-thumb" alt="${escapeHtml(request.name || 'Custom cake request')}"/>`
+      : '';
+    const pickupDate = request.pickup_date ? new Date(request.pickup_date).toLocaleDateString() : 'Not set';
+    const price = request.final_price || request.estimated_price;
+    const priceText = price ? formatPeso(price) : 'Waiting for quote';
+
+    card.innerHTML = `
+      <div class="design-card-header">
+        <h3>${escapeHtml(request.name || 'Custom cake request')}</h3>
+        <span class="design-type-badge ${status.className}">${status.label}</span>
+      </div>
+      ${image}
+      <div class="design-card-info">
+        <p>Pickup date: ${pickupDate}</p>
+        <p>Occasion: ${escapeHtml(formatLabel(request.occasion))}</p>
+        <p>Estimated price: ${priceText}</p>
+        <p>${escapeHtml(status.message)}</p>
+      </div>
+    `;
+
+    container.appendChild(card);
+  });
+}
+
 function renderDesigns(designs) {
   const container = document.getElementById('designsContainer');
-  container.innerHTML = '<div class="section-title">Saved Designs</div>';
-  if (!designs || designs.length === 0) return;
+  container.innerHTML = '';
+  if (!designs || designs.length === 0) {
+    container.innerHTML = '<div class="empty-state"><h2>No saved designs yet</h2><p>Your editor designs will appear here.</p></div>';
+    return;
+  }
 
   designs.forEach(design => {
     const card = document.createElement('div');
@@ -131,6 +198,35 @@ function renderDesigns(designs) {
   });
 }
 
+function getCustomRequestStatus(status) {
+  if (status === 'approved') {
+    return {
+      label: 'Approved',
+      className: 'paid',
+      message: 'Your baker approved this request. Watch for the final quote.'
+    };
+  }
+  if (status === 'rejected') {
+    return {
+      label: 'Declined',
+      className: 'completed',
+      message: 'This request was declined. Please submit a different reference.'
+    };
+  }
+  if (status === 'completed') {
+    return {
+      label: 'Completed',
+      className: 'completed',
+      message: 'This custom cake request has been completed.'
+    };
+  }
+  return {
+    label: 'Pending Review',
+    className: 'pending',
+    message: 'A baker is reviewing your image and details.'
+  };
+}
+
 function getOrderStatus(order) {
   if (order.status === 'completed') {
     return {
@@ -151,6 +247,21 @@ function getOrderStatus(order) {
     className: 'pending',
     message: 'Awaiting payment before the baker starts production.'
   };
+}
+
+function formatLabel(value) {
+  if (!value) return 'Not specified';
+  return String(value).replace(/-/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+}
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, char => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[char]));
 }
 
 function getDashboardThumbnail(design) {
