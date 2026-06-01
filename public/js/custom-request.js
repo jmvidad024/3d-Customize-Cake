@@ -173,8 +173,8 @@ form.addEventListener('submit', async (e) => {
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(errorText || 'Unable to submit request');
+      const error = await response.json().catch(async () => ({ error: await response.text() }));
+      throw new Error(error.details || error.error || 'Unable to submit request');
     }
 
     const data = await response.json();

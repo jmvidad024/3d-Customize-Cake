@@ -96,7 +96,11 @@ async function submitCustomRequest(req, res) {
 
   } catch (error) {
     console.error('Error submitting custom request:', error);
-    res.status(500).json({ error: 'Failed to submit request' });
+    res.status(500).json({
+      error: 'Failed to submit request',
+      details: error.message,
+      code: error.code
+    });
   }
 }
 
