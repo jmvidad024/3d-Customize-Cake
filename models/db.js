@@ -92,8 +92,7 @@ async function init() {
       thumbnail TEXT,
       price DECIMAL(10,2) NOT NULL DEFAULT 0,
       design LONGTEXT NOT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE SET NULL
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=InnoDB;
   `);
 
@@ -105,8 +104,7 @@ async function init() {
       image_url TEXT DEFAULT NULL,
       design_id INT DEFAULT NULL,
       status ENUM('open','resolved') DEFAULT 'open',
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=InnoDB;
   `);
 
@@ -124,9 +122,7 @@ async function init() {
       paid TINYINT(1) DEFAULT 0,
       paid_at DATETIME DEFAULT NULL,
       completed_at DATETIME DEFAULT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-      FOREIGN KEY (design_id) REFERENCES designs(id) ON DELETE SET NULL
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=InnoDB;
   `);
 
@@ -150,8 +146,7 @@ async function init() {
       baker_notes TEXT DEFAULT NULL,
       status VARCHAR(50) NOT NULL DEFAULT 'pending',
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     ) ENGINE=InnoDB;
   `);
 
