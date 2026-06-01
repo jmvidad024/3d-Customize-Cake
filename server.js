@@ -28,7 +28,6 @@ const upload = multer({
 const app = express();
 
 app.use(express.json());
-app.use(authenticateToken);
 
 /**
  * -----------------------------
@@ -37,28 +36,50 @@ app.use(authenticateToken);
  * Prevents re-initializing on every request / cold start chaos
  */
 let bootstrapped = false;
+let bootstrapPromise = null;
 
 async function bootstrap() {
-  if (bootstrapped) return;
-  bootstrapped = true;
+  if (bootstrapped) return true;
+  if (!bootstrapPromise) {
+    bootstrapPromise = (async () => {
+      await init();
 
-  try {
-    await init();
+      const { ensureDefaultUsers } = require('./models/userModel');
+      const { ensureDefaultDesigns } = require('./models/designModel');
 
-    const { ensureDefaultUsers } = require('./models/userModel');
-    const { ensureDefaultDesigns } = require('./models/designModel');
+      await ensureDefaultUsers();
+      await ensureDefaultDesigns();
 
-    await ensureDefaultUsers();
-    await ensureDefaultDesigns();
-
-    console.log('DB initialized successfully');
-  } catch (err) {
-    console.error('DB initialization failed:', err);
+      console.log('DB initialized successfully');
+      bootstrapped = true;
+      return true;
+    })().catch((err) => {
+      bootstrapPromise = null;
+      throw err;
+    });
   }
+
+  return bootstrapPromise;
 }
 
-// Run bootstrap once per cold start
-bootstrap();
+app.use(async (req, res, next) => {
+  try {
+    await bootstrap();
+    next();
+  } catch (err) {
+    console.error('DB initialization failed:', err);
+    if (req.originalUrl.startsWith('/api')) {
+      return res.status(503).json({
+        error: 'Database is not ready',
+        details: err.message,
+        code: err.code
+      });
+    }
+    res.status(503).send('Database is not ready. Please try again in a moment.');
+  }
+});
+
+app.use(authenticateToken);
 
 /**
  * -----------------------------
