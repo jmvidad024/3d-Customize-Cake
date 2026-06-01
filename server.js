@@ -75,7 +75,10 @@ app.use(async (req, res, next) => {
         code: err.code
       });
     }
-    res.status(503).send('Database is not ready. Please try again in a moment.');
+    res
+      .status(503)
+      .type('text/plain')
+      .send(`Database is not ready: ${err.message}${err.code ? ` (${err.code})` : ''}`);
   }
 });
 
